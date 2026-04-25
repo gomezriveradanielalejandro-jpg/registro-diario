@@ -2,465 +2,1124 @@
 <html lang="es">
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>Control Diario - Joyería</title>
+
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #eef1f5;
-            padding: 20px;
-            color: #333;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top, #1e293b, #020617);
+            color: #f9fafb;
+
+
         }
 
+        /* HEADER */
         h1 {
             text-align: center;
-            color: #1e88e5;
+            padding: 20px;
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #d4af37;
         }
 
-        .card {
-            background: white;
+        /* CONTENEDOR */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            max-width: 850px;
+            max-width: 500px;
             margin: auto;
         }
 
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 0.9em;
+        /*  MODO CELULAR */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .full {
+                grid-column: span 1;
+            }
         }
 
+        /* CARDS */
+        .card {
+            background: #111827;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* FULL WIDTH */
+        .full {
+            grid-column: span 2;
+        }
+
+        /* TITULOS */
+        h3 {
+            margin-top: 0;
+            color: #d4af37;
+        }
+
+        /* INPUTS */
         input,
-        select,
-        button {
-            padding: 10px;
-            margin: 5px 0;
+        select {
             width: 100%;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
+            padding: 10px;
+            margin-top: 5px;
+            background: #1f2937;
+            border: none;
+            border-radius: 8px;
+            color: white;
         }
 
+        /* BOTONES */
         button {
-            background: #1e88e5;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+            background: linear-gradient(135deg, #d4af37, #b8962e);
             border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         button:hover {
-            background: #1565c0;
+            transform: translateY(-2px);
         }
 
+        /* RESUMEN */
+        .resumen-visual {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .indicador {
+            flex: 1;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1f2937, #111827);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #d4af37;
+            font-size: 0.8em;
+        }
+
+        /* PAGO */
+        .pago-visualizacion {
+            background: linear-gradient(135deg, #d4af37, #facc15);
+            color: black;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.4em;
+        }
+
+        /* TABLAS */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
 
-        th,
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        th {
+            background: #1f2937;
+            color: #d4af37;
+            padding: 10px;
+        }
+
         td {
-            border-bottom: 1px solid #ddd;
             padding: 10px;
             text-align: center;
+            border-bottom: 1px solid #374151;
         }
 
-        .pago-visualizacion {
-            background: #fff9c4;
-            padding: 15px;
-            margin-top: 10px;
-            border: 2px dashed #fbc02d;
+        /* MODAL */
+        .modal-content {
+            background-color: #111827;
+            color: white;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #d4af37, #facc15);
+            color: #000 !important;
             font-weight: bold;
-            text-align: center;
-            font-size: 1.2em;
-            color: #827717;
         }
 
-        /* Círculos de Resumen */
-        .resumen-visual {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+        .total-row td {
+            border-bottom: none !important;
+            color: #000 !important;
         }
 
-        .indicador {
-            width: 115px;
-            height: 115px;
-            border-radius: 50%;
+        @media (max-width: 768px) {
+            .resumen-visual {
+                flex-wrap: wrap;
+            }
+
+            .indicador {
+                flex: 1 1 45%;
+                height: 90px;
+                font-size: 0.7em;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            button {
+                font-size: 1em;
+                padding: 12px;
+            }
+
+            input,
+            select {
+                font-size: 1em;
+                padding: 12px;
+            }
+
+        }
+
+        .cliente-row {
             display: flex;
-            flex-direction: column;
+            gap: 10px;
             align-items: center;
-            justify-content: center;
-            background: white;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
         }
 
-        .capital-dia {
-            border: 6px solid #4caf50;
-            color: #2e7d32;
+        .cliente-row select {
+            flex: 1;
         }
 
-        /* Verde */
-        .capital-gastado {
-            border: 6px solid #1e88e5;
-            color: #1565c0;
+        /* BOTONES LATERALES */
+        .acciones-cliente {
+            display: flex;
+            gap: 5px;
         }
 
-        /* Azul */
-        .capital-restante {
-            border: 6px solid #ff9800;
-            color: #e65100;
+        .acciones-cliente button {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #1f2937;
+            color: #d4af37;
+            font-size: 1.2em;
+            padding: 0;
         }
 
-        /* Naranja */
-        .capital-gramos {
-            border: 6px solid #9c27b0;
-            color: #7b1fa2;
+        .acciones-cliente button:hover {
+            background: #d4af37;
+            color: black;
         }
 
-        /* Morado */
-        .alerta-negativo {
-            border-color: #e53935 !important;
-            color: #b71c1c !important;
-            background-color: #ffebee !important;
+        .cliente-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
-        .monto {
-            font-size: 0.95em;
+        .icon-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #d4af37, #b8962e);
+            color: black;
         }
 
-        .etiqueta {
-            font-size: 0.65em;
-            text-transform: uppercase;
-            margin-bottom: 2px;
+        .icon-btn.delete {
+            background: #e53935;
+            color: white;
         }
 
-        /* Modal */
         .modal {
             display: none;
+            /* oculto por defecto */
             position: fixed;
-            z-index: 1000;
+            z-index: 999;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+
+            background: rgba(0, 0, 0, 0.6);
+            /* fondo oscuro */
+            backdrop-filter: blur(5px);
+            /* efecto pro */
         }
 
         .modal-content {
-            background-color: white;
+            background: #111827;
             margin: 10% auto;
-            padding: 25px;
-            border-radius: 12px;
+            padding: 20px;
+            border-radius: 16px;
             width: 90%;
-            max-width: 600px;
-            position: relative;
+            max-width: 400px;
+
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            animation: aparecer 0.3s ease;
         }
 
-        .close {
-            position: absolute;
-            right: 20px;
-            top: 15px;
-            font-size: 28px;
-            cursor: pointer;
-            color: #aaa;
-        }
+        /* animación */
+        @keyframes aparecer {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
 
-        .btn-detalle {
-            background: #4caf50;
-            width: auto;
-            padding: 5px 12px;
-            font-size: 0.85em;
-        }
-
-        .delete-btn {
-            background: #e53935;
-            width: auto;
-            padding: 2px 8px;
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <h1>Control Diario Original</h1>
 
-    <!-- SECCIÓN DE CAPITAL -->
-    <div class="card">
-        <h3>Información del Día</h3>
-        <label>Fecha</label>
-        <input type="date" id="fecha">
-        <label>Capital Inicial (Base)</label>
-        <input type="number" id="capitalInicial" placeholder="0.00">
-        <label>Monto Extra</label>
-        <input type="number" id="montoExtra" placeholder="Ej: +500">
-        <button onclick="actualizarCapital()">Actualizar Capital</button>
+    <div class="container">
+        <h1>Control Diario</h1>
 
-        <div class="resumen-visual">
-            <div class="indicador capital-dia">
-                <span class="etiqueta">Capital Día</span>
-                <span class="monto">$<span id="v_total">0</span></span>
+        <!-- SECCIÓN DE CAPITAL -->
+        <div class="card full">
+            <h3>Información del Día</h3>
+            <label>Fecha</label>
+            <input type="date" id="fecha">
+
+            <label>Capital Semanal</label>
+
+            <div style="display: flex; gap: 5px; align-items: center;">
+                <input type="number" id="capitalInicial" placeholder="0.00" disabled>
+
+                <button onclick="editarCapital()">✏️</button>
+                <button onclick="guardarCapital()">✅</button>
             </div>
-            <div class="indicador capital-gastado">
-                <span class="etiqueta">Gastado</span>
-                <span class="monto">$<span id="v_gastado">0</span></span>
+
+            <label>Monto Utilizado</label>
+            <input type="number" id="montoUtilizado" placeholder="Ej: 500">
+            <button onclick="actualizarCapital()">Actualizar </button>
+
+            <div class="resumen-visual">
+                <div class="indicador capital-dia">
+                    <span class="etiqueta">Capital Semanal</span>
+                    <span class="monto">$<span id="v_total">0</span></span>
+                </div>
+                <div class="indicador capital-gastado">
+                    <span class="etiqueta">Gastado</span>
+                    <span class="monto">$<span id="v_gastado">0</span></span>
+                </div>
+                <div class="indicador capital-restante" id="circuloNaranja">
+                    <span class="etiqueta">Restante</span>
+                    <span class="monto">$<span id="capitalRestante">0</span></span>
+                </div>
+                <div class="indicador capital-gramos">
+                    <span class="etiqueta">Total Gramos</span>
+                    <span class="monto"><span id="v_totalGramos">0</span> g</span>
+                </div>
             </div>
-            <div class="indicador capital-restante" id="circuloNaranja">
-                <span class="etiqueta">Restante</span>
-                <span class="monto">$<span id="capitalRestante">0</span></span>
-            </div>
-            <div class="indicador capital-gramos">
-                <span class="etiqueta">Total Gramos</span>
-                <span class="monto"><span id="v_totalGramos">0</span> g</span>
+
+            <div class="indicador">
+                <span class="etiqueta">Utilizado</span>
+                <span class="monto">$<span id="v_utilizado">0</span></span>
             </div>
         </div>
-    </div>
 
-    <!-- SECCIÓN DE REGISTRO -->
-    <div class="card">
-        <h3>Registrar Compra</h3>
-        <label>Cliente</label>
-        <select id="cliente">
-            <option>Pablo Lerdo</option>
-            <option>Doña Aurora</option>
-            <option>Señora Mari</option>
-            <option>Don Arturo</option>
-            <option>Doña Mago</option>
-            <option>Doña Rosi</option>
-            <option>Carlitros</option>
-            <option>Manuelito</option>
-            <option>Victorinox</option>
-            <option>Señora Ana</option>
-            <option>Joselito</option>
-            <option>Cecar</option>
-            <option>Omar</option>
-            <option>Pocho</option>
-            <option>Chonchis</option>
-            <option>Señora Lulu</option>
-            <option>Pablo</option>
-            <option>Tocayo</option>
-            <option>Hermana del Tocayo</option>
-            <option>Señora Sonia</option>
-            <option>Fredy Venezuela</option>
-        </select>
+        <!-- SECCIÓN DE REGISTRO -->
 
-        <label>Gramos</label>
-        <input type="number" id="gramos" oninput="calcularPago()" step="0.01">
+        <div class="card full">
 
-        <label>Ley</label>
-        <select id="ley">
-            <option value="999">999</option>
-            <option value="925">925</option>
-            <option value="910">910</option>
-            <option value="900">900</option>
-            <option value="830">830</option>
-            <option value="800">800</option>
-            <option value="720">720</option>
-            <option value="600">600</option>
-            <option value="500">500</option>
-            <option value="400">400</option>
-            <option value="300">300</option>
-            <option value="100">100</option>
-        </select>
+            <h3>Registrar Compra</h3>
 
-        <label>Costo por gramo</label>
-        <input type="number" id="costoGramo" oninput="calcularPago()" step="0.01">
+            <label>Cliente</label>
 
-        <div class="pago-visualizacion">Cantidad a Pagar: $<span id="pagoTotal">0</span></div>
-        <button onclick="guardarCompra()" style="background:#2e7d32; margin-top:10px;">Guardar Compra</button>
-    </div>
+            <div class="cliente-box">
+                <select id="cliente"></select>
 
-    <!-- SECCIÓN DE RESUMEN -->
-    <div class="card">
-        <h3>Resumen de Clientes</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Total Peso</th>
-                    <th>Total Pagado</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="tablaCompras"></tbody>
-        </table>
+                <button class="icon-btn" onclick="abrirModalCliente()">➕</button>
+                <button class="icon-btn" onclick="editarCliente()">✏️</button>
+                <button class="icon-btn delete" onclick="eliminarCliente()">🗑️</button>
 
-        <h4>Resumen de Peso por Ley</h4>
-        <table id="tablaResumenLeyes"></table>
+            </div>
 
 
-        <button onclick="limpiarTodo()" style="background:#607d8b;">Limpiar Todo el Día</button>
-    </div>
 
-    <!-- VENTANA DE DETALLE (MODAL) -->
-    <div id="miModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="cerrarModal()">&times;</span>
-            <h3 id="modalTitulo">Historial</h3>
-            <table id="contenidoModal"></table>
+
+            <h3>Registro Rápido</h3>
+
+            <table id="tablaRapida">
+                <thead>
+                    <tr>
+                        <th>Ley</th>
+                        <th>Gramos</th>
+                        <th>Precio</th>
+                        <th>Costo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>999</td>
+                        <td><input type="number" id="g_999" oninput="calcularFila(999)"></td>
+                        <td><input type="number" id="p_999" oninput="calcularFila(999)"></td>
+                        <td id="c_999">0</td>
+                    </tr>
+                    <tr>
+                        <td>925</td>
+                        <td><input type="number" id="g_925" oninput="calcularFila(925)"></td>
+                        <td><input type="number" id="p_925" oninput="calcularFila(925)"></td>
+                        <td id="c_925">0</td>
+                    </tr>
+                    <tr>
+                        <td>900</td>
+                        <td><input type="number" id="g_900" oninput="calcularFila(900)"></td>
+                        <td><input type="number" id="p_900" oninput="calcularFila(900)"></td>
+                        <td id="c_900">0</td>
+                    </tr>
+                    <tr>
+                        <td>800</td>
+                        <td><input type="number" id="g_800" oninput="calcularFila(800)"></td>
+                        <td><input type="number" id="p_800" oninput="calcularFila(800)"></td>
+                        <td id="c_800">0</td>
+                    </tr>
+                    <tr>
+                        <td>720</td>
+                        <td><input type="number" id="g_720" oninput="calcularFila(720)"></td>
+                        <td><input type="number" id="p_720" oninput="calcularFila(720)"></td>
+                        <td id="c_720">0</td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td><input type="number" id="g_500" oninput="calcularFila(500)"></td>
+                        <td><input type="number" id="p_500" oninput="calcularFila(500)"></td>
+                        <td id="c_500">0</td>
+                    </tr>
+                    <tr>
+                        <td>400</td>
+                        <td><input type="number" id="g_400" oninput="calcularFila(400)"></td>
+                        <td><input type="number" id="p_400" oninput="calcularFila(400)"></td>
+                        <td id="c_400">0</td>
+                    </tr>
+                    <tr>
+                        <td>300</td>
+                        <td><input type="number" id="g_300" oninput="calcularFila(300)"></td>
+                        <td><input type="number" id="p_300" oninput="calcularFila(300)"></td>
+                        <td id="c_300">0</td>
+                    </tr>
+                    <tr>
+                        <td>100</td>
+                        <td><input type="number" id="g_100" oninput="calcularFila(100)"></td>
+                        <td><input type="number" id="p_100" oninput="calcularFila(100)"></td>
+                        <td id="c_100">0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pago-visualizacion">
+                Total a pagar: $<span id="totalPagar">0</span>
+            </div>
+
+            <div class="pago-visualizacion">
+                Total de gramos: <span id="totalGramosRapido">0</span> g
+            </div>
+
+            <button onclick="guardarCompraRapida()">Guardar Compra</button>
+
+            <!-- SECCIÓN DE RESUMEN -->
+            <div class="card full">
+                <h3>Resumen de Clientes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Total Peso</th>
+                            <th>Total Pagado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCompras"></tbody>
+                </table>
+
+                <h4>Resumen de Peso por Ley</h4>
+                <table id="tablaResumenLeyes"></table>
+
+
+                <button onclick="guardarDia()" style="background:#ff9800;">Guardar Día</button>
+                <button onclick="verResumenSemanal()" style="background:#6a1b9a;">Ver Resumen Semanal</button>
+
+            </div>
+
+            <!-- VENTANA DE DETALLE (MODAL) -->
+            <div id="miModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="cerrarModal()">&times;</span>
+                    <h3 id="modalTitulo">Historial</h3>
+                    <table id="contenidoModal"></table>
+                </div>
+            </div>
+
+            <div id="modalCliente" class="modal">
+                <div class="modal-content">
+                    <h3>Nuevo Cliente</h3>
+
+                    <input type="text" id="inputClienteModal" placeholder="Nombre del cliente">
+
+                    <button onclick="guardarClienteModal()">Guardar</button>
+                    <button onclick="cerrarModalCliente()" style="background:#e53935;">Cancelar</button>
+                </div>
+            </div>
+
+            <div id="modalEditarCliente" class="modal">
+                <div class="modal-content">
+                    <h3>Editar Cliente</h3>
+
+                    <input type="text" id="inputEditarCliente">
+
+                    <button onclick="guardarEdicionCliente()">Guardar Cambios</button>
+                    <button onclick="cerrarModalEditar()" style="background:#e53935;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+
+            <script>
+                // VARIABLES GLOBALES
+
+                let compras = JSON.parse(localStorage.getItem("compras")) || [];
+                let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+                let capitalAcumulado = Number(localStorage.getItem("capitalGuardado")) || 0;
+                let montoUtilizadoDia = Number(localStorage.getItem("utilizadoHoy")) || 0;
+                let dineroDisponibleHoy = Number(localStorage.getItem("dineroHoy")) || 0;
+
+
+                if (clientes.length === 0) {
+                    clientes = ["Pablo Lerdo", "Aurora", "Mari", "Arturo", "Mago", "Rosi", "Carlitros", "Manuelito", "Victorinox", "Ana", "Joselito", "Cecar", "Omar", "Pocho", "Chonchis", "Lulu", "Pablo", "Tocayo", "Hermana del Tocayo", "Sonia", "Fredy Venezuela"];
+                    localStorage.setItem("clientes", JSON.stringify(clientes));
+                }
+
+                document.getElementById("fecha").valueAsDate = new Date();
+
+                function calcularPago() {
+                    let g = Number(document.getElementById("gramos").value) || 0;
+                    let c = Number(document.getElementById("costoGramo").value) || 0;
+                    document.getElementById("pagoTotal").innerText = (g * c).toLocaleString('en-US');
+                }
+
+
+                function guardarCompra() {
+                    let cl = document.getElementById("cliente").value;
+                    let gr = Number(document.getElementById("gramos").value);
+                    let ly = document.getElementById("ley").value;
+                    let co = Number(document.getElementById("costoGramo").value);
+
+                    if (!gr || !co) return alert("Por favor, ingresa gramos y costo.");
+
+                    compras.push({
+                        id: Date.now(),
+                        cliente: cl,
+                        gramos: gr,
+                        ley: ly,
+                        costo: co,
+                        total: gr * co
+                    });
+                    localStorage.setItem("compras", JSON.stringify(compras));
+
+                    // Limpiar campos de registro
+                    document.getElementById("gramos").value = "";
+                    document.getElementById("costoGramo").value = "";
+                    document.getElementById("pagoTotal").innerText = "0";
+
+                    actualizarVista();
+                }
+
+                function actualizarCapital() {
+
+                    localStorage.setItem("dineroHoy", dineroDisponibleHoy);
+                    localStorage.setItem("utilizadoHoy", montoUtilizadoDia);
+
+                    let utilizado = Number(document.getElementById("montoUtilizado").value) || 0;
+
+                    if (utilizado <= 0) return;
+
+                    // 🔥 dinero que usarás hoy
+                    montoUtilizadoDia += utilizado;
+
+                    // 🔥 ESTE ES EL DINERO REAL PARA TRABAJAR HOY
+                    dineroDisponibleHoy += utilizado;
+
+                    // 🔥 restar del capital semanal
+                    capitalAcumulado -= utilizado;
+
+                    localStorage.setItem("capitalGuardado", capitalAcumulado);
+
+                    // 🔥 mostrar en UI
+                    document.getElementById("v_utilizado").innerText = montoUtilizadoDia.toLocaleString('en-US');
+
+                    // limpiar input
+                    document.getElementById("montoUtilizado").value = "";
+
+                    actualizarVista();
+                }
+
+                function actualizarVista() {
+                    let tabla = document.getElementById("tablaCompras");
+                    let tablaLeyes = document.getElementById("tablaResumenLeyes");
+                    tabla.innerHTML = ""; 
+                    tablaLeyes.innerHTML = "<thead><tr><th>Ley</th><th>Peso (g)</th><th>Gastado ($)</th></tr></thead><tbody>";
+
+                    let dineroGastado = 0;
+                    let gramosTotales = 0;
+                    let resL = {};
+                    let resC = {};
+                    let resLGasto = {};
+
+                    compras.forEach(c => {
+                        dineroGastado += c.total;
+                        gramosTotales += c.gramos;
+                        resL[c.ley] = (resL[c.ley] || 0) + c.gramos;
+                        if (!resC[c.cliente]) resC[c.cliente] = {
+                            g: 0,
+                            t: 0
+                        };
+                        resC[c.cliente].g += c.gramos;
+                        resC[c.cliente].t += c.total;
+                        resLGasto[c.ley] = (resLGasto[c.ley] || 0) + c.total;
+                    });
+
+                    // Llenar tabla de clientes
+                    for (let cl in resC) {
+                        tabla.innerHTML += `<tr><td><strong>${cl}</strong></td><td>${resC[cl].g.toLocaleString('en-US')} g</td><td>$${resC[cl].t.toLocaleString('en-US')}</td><td><button class="btn-detalle" onclick="abrirDetalle('${cl}')">Ver Detalle</button></td></tr>`;
+                    }
+                    // Llenar tabla de leyes
+                    for (let l in resL) {
+                        tablaLeyes.innerHTML += `
+<tr>
+    <td>${l}</td>
+    <td>${resL[l].toLocaleString('en-US')} g</td>
+    <td>$${(resLGasto[l] || 0).toLocaleString('en-US')}</td>
+</tr>`;
+                    }
+
+                    // ACTUALIZAR LOS 4 CÍRCULOS
+                    let restante = dineroDisponibleHoy - dineroGastado;
+                    document.getElementById("v_total").innerText = capitalAcumulado.toLocaleString('en-US');
+                    document.getElementById("v_gastado").innerText = dineroGastado.toLocaleString('en-US');
+                    document.getElementById("capitalRestante").innerText = restante.toLocaleString('en-US');
+                    document.getElementById("v_totalGramos").innerText = gramosTotales.toLocaleString('en-US');
+
+                    // Alerta visual si el saldo es negativo
+                    let circuloN = document.getElementById("circuloNaranja");
+                    restante < 0 ? circuloN.classList.add('alerta-negativo') : circuloN.classList.remove('alerta-negativo');
+
+                    // Mantener bloqueado el inicial si hay datos
+                    if (capitalAcumulado > 0) document.getElementById("capitalInicial").disabled = true;
+                }
+
+                function abrirDetalle(cliente) {
+                    const cont = document.getElementById("contenidoModal");
+                    document.getElementById("modalTitulo").innerText = "Historial: " + cliente;
+                    cont.innerHTML = "<thead><tr><th>Ley</th><th>Peso</th><th>Subtotal</th><th></th></tr></thead><tbody>";
+
+                    compras.filter(c => c.cliente === cliente).forEach(item => {
+                        cont.innerHTML += `<tr><td>${item.ley}</td><td>${item.gramos} g</td><td>$${item.total.toLocaleString('en-US')}</td><td><button class="delete-btn" onclick="eliminarRegistro(${item.id},'${cliente}')">✕</button></td></tr>`;
+                    });
+                    document.getElementById("miModal").style.display = "block";
+                }
+
+                function eliminarRegistro(id, cl) {
+                    if (confirm("¿Eliminar esta compra específica?")) {
+                        compras = compras.filter(c => c.id !== id);
+                        localStorage.setItem("compras", JSON.stringify(compras));
+                        compras.some(c => c.cliente === cl) ? abrirDetalle(cl) : cerrarModal();
+                        actualizarVista();
+                    }
+                }
+
+                function cerrarModal() {
+                    document.getElementById("miModal").style.display = "none";
+                }
+                window.onclick = e => {
+                    if (e.target == document.getElementById("miModal")) cerrarModal();
+                    if (e.target == document.getElementById("modalCliente")) cerrarModalCliente();
+                    if (e.target == document.getElementById("modalEditarCliente")) cerrarModalEditar();
+                }
+
+
+
+                function limpiarTodo() {
+                    if (confirm("¿Estás seguro de que quieres borrar TODOS los registros y el capital del día?")) {
+                        localStorage.clear();
+                        compras = [];
+                        let inputI = document.getElementById("capitalInicial");
+                        inputI.disabled = false;
+                        inputI.value = "";
+                        document.getElementById("montoUtilizado").value = "";
+                        actualizarVista();
+                        alert("Día reiniciado.");
+                    }
+                }
+
+                // Carga inicial al abrir la página
+                actualizarVista();
+                cargarClientes();
+
+                function guardarDia() {
+                    if (compras.length === 0) {
+                        return alert("No hay compras para guardar.");
+                    }
+
+                    if (!confirm("¿Guardar el día y reiniciar?")) return;
+
+                    let fecha = document.getElementById("fecha").value;
+
+                    let totalGastado = 0;
+                    let totalGramos = 0;
+
+                    compras.forEach(c => {
+                        totalGastado += c.total;
+                        totalGramos += c.gramos;
+                    });
+
+                    let capitalAntes = capitalAcumulado;
+
+                    // 🔥 dinero que sobró del día
+                    let sobrante = dineroDisponibleHoy - totalGastado;
+
+                    // 🔥 TU LÓGICA EXACTA
+                    capitalAcumulado = capitalAcumulado + dineroDisponibleHoy - totalGastado;
+
+                    localStorage.setItem("capitalGuardado", capitalAcumulado);
+
+                    let resumenDia = {
+                        fecha: fecha,
+                        capitalInicial: capitalAntes,
+                        utilizado: montoUtilizadoDia,
+                        gastado: totalGastado,
+                        restante: sobrante,
+                        gramos: totalGramos,
+                        compras: compras
+                    };
+
+                    let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
+                    semana.push(resumenDia);
+                    localStorage.setItem("resumenSemanal", JSON.stringify(semana));
+
+                    // 🔥 RESET
+                    compras = [];
+                    localStorage.removeItem("compras");
+
+                    montoUtilizadoDia = 0;
+                    dineroDisponibleHoy = 0;
+
+                    document.getElementById("v_utilizado").innerText = "0";
+                    document.getElementById("montoUtilizado").value = "";
+
+                    document.getElementById("capitalInicial").value = capitalAcumulado;
+
+                    actualizarVista();
+
+                    alert("Día guardado correctamente ✅");
+                }
+
+
+
+                function verResumenSemanal() {
+                    let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
+
+                    if (semana.length === 0) {
+                        return alert("No hay datos semanales.");
+                    }
+
+                    let cont = document.getElementById("contenidoModal");
+                    document.getElementById("modalTitulo").innerText = "Resumen Semanal";
+
+                    cont.innerHTML = `
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Capital</th>
+            <th>Utilizado</th>
+            <th>Gastado</th>
+            <th>Restante</th>
+            <th>Gramos</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+    `;
+
+                    // 🔥 VARIABLES PARA SUMAR
+                    let totalGastado = 0;
+                    let totalRestante = 0;
+                    let totalGramos = 0;
+                    let capitalFinal = 0;
+                    let totalUtilizado = 0;
+
+
+                    semana.forEach((dia, index) => {
+
+                        // SUMAR
+                        totalGastado += dia.gastado;
+                        totalRestante += dia.restante;
+                        totalGramos += dia.gramos;
+                        totalUtilizado += (dia.utilizado || 0);
+
+                        // 🔥 calcular capital final (último estado real)
+                        capitalFinal = semana[semana.length - 1].capitalInicial + semana[semana.length - 1].restante;
+
+                        // MOSTRAR FILA NORMAL
+                        cont.innerHTML += `
+<tr>
+    <td>${dia.fecha}</td>
+    <td>$${dia.capitalInicial.toLocaleString('en-US')}</td>
+    <td>$${(dia.utilizado || 0).toLocaleString('en-US')}</td>
+    <td>$${dia.gastado.toLocaleString('en-US')}</td>
+    <td>$${dia.restante.toLocaleString('en-US')}</td>
+    <td>${dia.gramos} g</td>
+    <td>
+<button onclick="verDesgloseIndex(${index})">
+    Desglose
+</button>
+    </td>
+</tr>
+        `;
+                    });
+
+                    // 🔥 FILA FINAL DE TOTAL
+                    cont.innerHTML += `
+    
+<tr class="total-row">
+<td>RESUMEN</td>
+<td>$${capitalFinal.toLocaleString('en-US')}</td>
+<td>$${totalUtilizado.toLocaleString('en-US')}</td>
+<td>$${totalGastado.toLocaleString('en-US')}</td>
+<td>$${totalRestante.toLocaleString('en-US')}</td>
+<td>${totalGramos.toLocaleString('en-US')} g</td>
+<td>
+    <button onclick="limpiarSemana()" style="background:#e53935;">
+        Limpiar
+    </button>
+</td>
+</tr>
+    `;
+                    document.getElementById("miModal").style.display = "block";
+
+
+                }
+
+                function cargarClientes() {
+                    let select = document.getElementById("cliente");
+                    select.innerHTML = "";
+
+                    clientes.forEach(c => {
+                        let option = document.createElement("option");
+                        option.value = c;
+                        option.textContent = c;
+                        select.appendChild(option);
+                    });
+                }
+
+
+
+
+                function agregarCliente() {
+                    let input = document.getElementById("nuevoCliente");
+                    let nombre = input.value.trim();
+
+                    if (!nombre) return alert("Escribe un nombre");
+
+                    if (clientes.includes(nombre)) {
+                        return alert("Ese cliente ya existe");
+                    }
+
+                    clientes.push(nombre);
+                    localStorage.setItem("clientes", JSON.stringify(clientes));
+
+                    input.value = "";
+                    cargarClientes();
+                }
+
+                function eliminarCliente() {
+                    let select = document.getElementById("cliente");
+                    let cliente = select.value;
+
+                    if (!confirm("¿Eliminar cliente?")) return;
+
+                    clientes = clientes.filter(c => c !== cliente);
+
+                    localStorage.setItem("clientes", JSON.stringify(clientes));
+
+                    cargarClientes();
+                }
+
+                function verDesglose(comprasDia) {
+
+                    let cont = document.getElementById("contenidoModal");
+                    document.getElementById("modalTitulo").innerText = "Desglose del Día";
+
+                    cont.innerHTML = `
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Ley</th>
+            <th>Gramos</th>
+            <th>$/g</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+    `;
+
+                    comprasDia.forEach(c => {
+                        cont.innerHTML += `
+        <tr>
+            <td>${c.cliente}</td>
+            <td>${c.ley}</td>
+            <td>${c.gramos} g</td>
+            <td>$${c.costo}</td>
+            <td>$${c.total.toLocaleString('en-US')}</td>
+        </tr>
+        `;
+                    });
+
+                    document.getElementById("miModal").style.display = "block";
+                }
+
+                function verDesgloseIndex(i) {
+
+                    let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
+
+                    let comprasDia = semana[i].compras;
+
+                    verDesglose(comprasDia);
+                }
+
+                function editarCliente() {
+                    let select = document.getElementById("cliente");
+                    let actual = select.value;
+
+                    let nuevo = prompt("Editar nombre del cliente:", actual);
+
+                    if (!nuevo || nuevo.trim() === "") return;
+
+                    nuevo = nuevo.trim();
+
+                    if (clientes.includes(nuevo)) {
+                        return alert("Ese nombre ya existe");
+                    }
+
+                    clientes = clientes.map(c => c === actual ? nuevo : c);
+
+                    localStorage.setItem("clientes", JSON.stringify(clientes));
+
+                    cargarClientes();
+                }
+
+                function abrirModalCliente() {
+                    document.getElementById("modalCliente").style.display = "block";
+                }
+
+                function cerrarModalCliente() {
+                    document.getElementById("modalCliente").style.display = "none";
+                }
+
+                function guardarClienteModal() {
+                    let input = document.getElementById("inputClienteModal");
+                    let nombre = input.value.trim();
+
+                    if (!nombre) return alert("Escribe un nombre");
+
+                    if (clientes.includes(nombre)) {
+                        return alert("Ese cliente ya existe");
+                    }
+
+                    clientes.push(nombre);
+                    localStorage.setItem("clientes", JSON.stringify(clientes));
+
+                    input.value = "";
+                    cerrarModalCliente();
+                    cargarClientes();
+                }
+
+                let clienteEditando = "";
+
+                // ABRIR MODAL
+                function editarCliente() {
+                    let select = document.getElementById("cliente");
+                    clienteEditando = select.value;
+
+                    if (!clienteEditando) return alert("Selecciona un cliente");
+
+                    document.getElementById("inputEditarCliente").value = clienteEditando;
+                    document.getElementById("modalEditarCliente").style.display = "block";
+                }
+
+                // CERRAR
+                function cerrarModalEditar() {
+                    document.getElementById("modalEditarCliente").style.display = "none";
+                }
+
+                // GUARDAR CAMBIO
+                function guardarEdicionCliente() {
+                    let nuevoNombre = document.getElementById("inputEditarCliente").value.trim();
+
+                    if (!nuevoNombre) return alert("Escribe un nombre");
+
+                    if (clientes.includes(nuevoNombre)) {
+                        return alert("Ese nombre ya existe");
+                    }
+
+                    // 🔁 actualizar lista clientes
+                    clientes = clientes.map(c => c === clienteEditando ? nuevoNombre : c);
+
+                    // 🔁 actualizar compras (CLAVE)
+                    compras = compras.map(c => {
+                        if (c.cliente === clienteEditando) {
+                            c.cliente = nuevoNombre;
+                        }
+                        return c;
+                    });
+
+                    // 💾 guardar todo
+                    localStorage.setItem("clientes", JSON.stringify(clientes));
+                    localStorage.setItem("compras", JSON.stringify(compras));
+
+                    cerrarModalEditar();
+                    cargarClientes();
+                    actualizarVista();
+                }
+
+                function limpiarSemana() {
+                    if (!confirm("¿Borrar toda la semana?")) return;
+
+                    localStorage.removeItem("resumenSemanal");
+
+                    alert("Resumen semanal eliminado");
+
+                    cerrarModal();
+                }
+
+                function editarCapital() {
+                    const input = document.getElementById("capitalInicial");
+                    input.disabled = false;
+                    input.focus();
+                }
+
+                function guardarCapital() {
+                    const input = document.getElementById("capitalInicial");
+                    let valor = parseFloat(input.value);
+
+                    if (isNaN(valor) || valor <= 0) {
+                        alert("Ingresa un valor válido");
+                        return;
+                    }
+
+                    capitalAcumulado = valor;
+
+                    localStorage.setItem("capitalGuardado", capitalAcumulado);
+
+                    input.disabled = true;
+
+                    actualizarVista(); // actualiza círculos
+                }
+
+                function calcularFila(ley) {
+                    let g = Number(document.getElementById(`g_${ley}`).value) || 0;
+                    let p = Number(document.getElementById(`p_${ley}`).value) || 0;
+
+                    let costo = g * p;
+
+                    document.getElementById(`c_${ley}`).innerText = costo.toLocaleString('en-US');
+
+                    calcularTotalesRapido();
+                }
+
+                function calcularTotalesRapido() {
+
+                    let leyes = [999, 925, 900, 800, 720, 500, 400, 300, 100];
+
+                    let total = 0;
+                    let gramos = 0;
+
+                    leyes.forEach(l => {
+                        let g = Number(document.getElementById(`g_${l}`).value) || 0;
+                        let p = Number(document.getElementById(`p_${l}`).value) || 0;
+
+                        total += g * p;
+                        gramos += g;
+                    });
+
+                    document.getElementById("totalPagar").innerText = total.toLocaleString('en-US');
+                    document.getElementById("totalGramosRapido").innerText = gramos.toLocaleString('en-US');
+                }
+
+                function guardarCompraRapida() {
+
+                    let leyes = [999, 925, 900, 800, 720, 500, 400, 300, 100];
+                    let cliente = document.getElementById("cliente").value;
+
+                    let huboRegistro = false;
+
+                    leyes.forEach(l => {
+                        let g = Number(document.getElementById(`g_${l}`).value) || 0;
+                        let p = Number(document.getElementById(`p_${l}`).value) || 0;
+
+                        if (g > 0 && p > 0) {
+                            compras.push({
+                                id: Date.now() + l,
+                                cliente: cliente,
+                                gramos: g,
+                                ley: l,
+                                costo: p,
+                                total: g * p
+                            });
+
+                            huboRegistro = true;
+                        }
+                    });
+
+                    if (!huboRegistro) {
+                        alert("No hay datos para guardar");
+                        return;
+                    }
+
+                    localStorage.setItem("compras", JSON.stringify(compras));
+
+                    // 🔥 AQUÍ SE LIMPIA AUTOMÁTICO
+                    limpiarTablaRapida();
+
+                    actualizarVista();
+                }
+
+                function limpiarTablaRapida() {
+                    let leyes = [999, 925, 900, 800, 720, 500, 400, 300, 100];
+
+                    leyes.forEach(l => {
+                        document.getElementById(`g_${l}`).value = "";
+                        document.getElementById(`p_${l}`).value = "";
+                        document.getElementById(`c_${l}`).innerText = "0";
+                    });
+
+                    document.getElementById("totalPagar").innerText = "0";
+                    document.getElementById("totalGramosRapido").innerText = "0";
+                    document.getElementById("g_999").focus();
+                }
+            </script>
         </div>
-    </div>
-
-    <script>
-        // VARIABLES GLOBALES
-        let compras = JSON.parse(localStorage.getItem("compras")) || [];
-        let capitalAcumulado = Number(localStorage.getItem("capitalGuardado")) || 0;
-
-        document.getElementById("fecha").valueAsDate = new Date();
-
-        function calcularPago() {
-            let g = Number(document.getElementById("gramos").value) || 0;
-            let c = Number(document.getElementById("costoGramo").value) || 0;
-            document.getElementById("pagoTotal").innerText = (g * c).toLocaleString('en-US');
-        }
-
-        function actualizarCapital() {
-            let inicial = Number(document.getElementById("capitalInicial").value) || 0;
-            let extra = Number(document.getElementById("montoExtra").value) || 0;
-
-            if (capitalAcumulado === 0 && inicial > 0) {
-                capitalAcumulado = inicial + extra;
-            } else {
-                capitalAcumulado += extra;
-            }
-
-            // Bloquear inicial si ya hay base
-            if (capitalAcumulado > 0) document.getElementById("capitalInicial").disabled = true;
-
-            // Limpiar extra y guardar
-            document.getElementById("montoExtra").value = "";
-            localStorage.setItem("capitalGuardado", capitalAcumulado);
-            actualizarVista();
-        }
-
-        function guardarCompra() {
-            let cl = document.getElementById("cliente").value;
-            let gr = Number(document.getElementById("gramos").value);
-            let ly = document.getElementById("ley").value;
-            let co = Number(document.getElementById("costoGramo").value);
-
-            if (!gr || !co) return alert("Por favor, ingresa gramos y costo.");
-
-            compras.push({
-                id: Date.now(),
-                cliente: cl,
-                gramos: gr,
-                ley: ly,
-                costo: co,
-                total: gr * co
-            });
-            localStorage.setItem("compras", JSON.stringify(compras));
-
-            // Limpiar campos de registro
-            document.getElementById("gramos").value = "";
-            document.getElementById("costoGramo").value = "";
-            document.getElementById("pagoTotal").innerText = "0";
-
-            actualizarVista();
-        }
-
-        function actualizarVista() {
-            let tabla = document.getElementById("tablaCompras");
-            let tablaLeyes = document.getElementById("tablaResumenLeyes");
-            tabla.innerHTML = "";
-            tablaLeyes.innerHTML = "<thead><tr><th>Ley</th><th>Peso Acumulado (g)</th></tr></thead><tbody>";
-
-            let dineroGastado = 0;
-            let gramosTotales = 0;
-            let resL = {};
-            let resC = {};
-
-            compras.forEach(c => {
-                dineroGastado += c.total;
-                gramosTotales += c.gramos;
-                resL[c.ley] = (resL[c.ley] || 0) + c.gramos;
-                if (!resC[c.cliente]) resC[c.cliente] = {
-                    g: 0,
-                    t: 0
-                };
-                resC[c.cliente].g += c.gramos;
-                resC[c.cliente].t += c.total;
-            });
-
-            // Llenar tabla de clientes
-            for (let cl in resC) {
-                tabla.innerHTML += `<tr><td><strong>${cl}</strong></td><td>${resC[cl].g.toLocaleString('en-US')} g</td><td>$${resC[cl].t.toLocaleString('en-US')}</td><td><button class="btn-detalle" onclick="abrirDetalle('${cl}')">Ver Detalle</button></td></tr>`;
-            }
-            // Llenar tabla de leyes
-            for (let l in resL) {
-                tablaLeyes.innerHTML += `<tr><td>${l}</td><td>${resL[l].toLocaleString('en-US')} g</td></tr>`;
-            }
-
-            // ACTUALIZAR LOS 4 CÍRCULOS
-            let restante = capitalAcumulado - dineroGastado;
-            document.getElementById("v_total").innerText = capitalAcumulado.toLocaleString('en-US');
-            document.getElementById("v_gastado").innerText = dineroGastado.toLocaleString('en-US');
-            document.getElementById("capitalRestante").innerText = restante.toLocaleString('en-US');
-            document.getElementById("v_totalGramos").innerText = gramosTotales.toLocaleString('en-US');
-
-            // Alerta visual si el saldo es negativo
-            let circuloN = document.getElementById("circuloNaranja");
-            restante < 0 ? circuloN.classList.add('alerta-negativo') : circuloN.classList.remove('alerta-negativo');
-
-            // Mantener bloqueado el inicial si hay datos
-            if (capitalAcumulado > 0) document.getElementById("capitalInicial").disabled = true;
-        }
-
-        function abrirDetalle(cliente) {
-            const cont = document.getElementById("contenidoModal");
-            document.getElementById("modalTitulo").innerText = "Historial: " + cliente;
-            cont.innerHTML = "<thead><tr><th>Ley</th><th>Peso</th><th>Subtotal</th><th></th></tr></thead><tbody>";
-
-            compras.filter(c => c.cliente === cliente).forEach(item => {
-                cont.innerHTML += `<tr><td>${item.ley}</td><td>${item.gramos} g</td><td>$${item.total.toLocaleString('en-US')}</td><td><button class="delete-btn" onclick="eliminarRegistro(${item.id},'${cliente}')">✕</button></td></tr>`;
-            });
-            document.getElementById("miModal").style.display = "block";
-        }
-
-        function eliminarRegistro(id, cl) {
-            if (confirm("¿Eliminar esta compra específica?")) {
-                compras = compras.filter(c => c.id !== id);
-                localStorage.setItem("compras", JSON.stringify(compras));
-                compras.some(c => c.cliente === cl) ? abrirDetalle(cl) : cerrarModal();
-                actualizarVista();
-            }
-        }
-
-        function cerrarModal() {
-            document.getElementById("miModal").style.display = "none";
-        }
-        window.onclick = e => {
-            if (e.target == document.getElementById("miModal")) cerrarModal();
-        }
-
-
-
-        function limpiarTodo() {
-            if (confirm("¿Estás seguro de que quieres borrar TODOS los registros y el capital del día?")) {
-                localStorage.clear();
-                compras = [];
-                capitalAcumulado = 0;
-                let inputI = document.getElementById("capitalInicial");
-                inputI.disabled = false;
-                inputI.value = "";
-                document.getElementById("montoExtra").value = "";
-                actualizarVista();
-                alert("Día reiniciado.");
-            }
-        }
-
-        // Carga inicial al abrir la página
-        actualizarVista();
-    </script>
+        </div>
 </body>
 
 </html>
