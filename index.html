@@ -1203,27 +1203,21 @@
             calcularTotalesRapido();
         }
 
-        // ========== VARIABLES GLOBALES ==========
+        // ========== LIMPIEZA DE PRIMERA VEZ (ANTES DE CARGAR DATOS) ==========
+        let esPrimeraVez = localStorage.getItem("primeraVez") !== "false";
+        if (esPrimeraVez) {
+            // LIMPIAR TODO si es primera vez
+            localStorage.clear();
+            localStorage.setItem("primeraVez", "true");  // Marcar que ya pasó la limpieza
+            console.log("✅ Primera vez - localStorage limpio");
+        }
+
+        // ========== VARIABLES GLOBALES (después de limpiar) ==========
         let compras = JSON.parse(localStorage.getItem("compras")) || [];
         let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-        // ========== VARIABLES GLOBALES ==========
-        // Verificar si es la primera vez que abre la app
-        let esPrimeraVez = localStorage.getItem("primeraVez") !== "false";
-        
-        // Si es primera vez, LIMPIAR TODO (menos clientes)
-        if (esPrimeraVez) {
-            localStorage.removeItem("capitalGuardado");
-            localStorage.removeItem("utilizadoHoy");
-            localStorage.removeItem("dineroHoy");
-            localStorage.removeItem("comprasDelDia");
-            localStorage.removeItem("resumenSemanal");
-            console.log("✅ Primera vez - Datos inicializados en 0");
-        }
-        
-        // Ahora inicializar variables
-        let capitalAcumulado = !esPrimeraVez ? (Number(localStorage.getItem("capitalGuardado")) || 0) : 0;
-        let montoUtilizadoDia = !esPrimeraVez ? (Number(localStorage.getItem("utilizadoHoy")) || 0) : 0;
-        let dineroDisponibleHoy = !esPrimeraVez ? (Number(localStorage.getItem("dineroHoy")) || 0) : 0;
+        let capitalAcumulado = Number(localStorage.getItem("capitalGuardado")) || 0;
+        let montoUtilizadoDia = Number(localStorage.getItem("utilizadoHoy")) || 0;
+        let dineroDisponibleHoy = Number(localStorage.getItem("dineroHoy")) || 0;
         let comprasDiaGlobal = [];
         let clienteEditando = "";
 
