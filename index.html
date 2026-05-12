@@ -659,6 +659,10 @@
             animation: fadeIn 0.3s ease;
         }
 
+        #modalGuia {
+            z-index: 2000 !important;
+        }
+
         .modal.active {
             display: flex;
             align-items: center;
@@ -1051,7 +1055,7 @@
             <button class="modal-close" onclick="cerrarModal()">&times;</button>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                 <h2 id="modalTitulo" style="margin: 0; flex: 1;">Historial</h2>
-                <button class="btn-help" onclick="abrirGuia('resumen')" style="width: 42px; height: 42px; border-radius: 50%; background: #00A3E0; color: white; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">?</button>
+                <button class="btn-help" onclick="abrirGuia('resumenSemanal')" style="width: 42px; height: 42px; border-radius: 50%; background: #00A3E0; color: white; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">?</button>
             </div>
             
             <div id="filtroClienteContainer">
@@ -1114,11 +1118,6 @@
 
             // Validación simple
             if (user === "tony" && pass === "1977") {
-                // Si es el primer login, marcar para inicializar en 0
-                if (!localStorage.getItem("sesionActiva")) {
-                    localStorage.setItem("primerLogin", "true");
-                }
-                
                 localStorage.setItem("sesionActiva", "true");
                 document.getElementById("loginScreen").style.display = "none";
                 document.getElementById("mainApp").style.display = "block";
@@ -1132,10 +1131,10 @@
 
         function cerrarSesion() {
             if (confirm("¿Cerrar sesión?")) {
-                // Solo borrar la sesión, MANTENER los datos en localStorage
+                // Solo cerrar sesión, MANTENER todos los datos
                 localStorage.removeItem("sesionActiva");
                 
-                console.log("✅ Sesión cerrada - Datos guardados en localStorage");
+                console.log("✅ Sesión cerrada - Datos mantenidos");
                 location.reload();
             }
         }
@@ -1208,20 +1207,8 @@
             calcularTotalesRapido();
         }
 
-        // ========== LIMPIEZA DE PRIMER LOGIN ==========
-        let esPrimerLogin = localStorage.getItem("primerLogin") === "true";
-        if (esPrimerLogin) {
-            // LIMPIAR SOLO datos de trabajo, mantener clientes y resumen semanal
-            localStorage.removeItem("capitalGuardado");
-            localStorage.removeItem("utilizadoHoy");
-            localStorage.removeItem("dineroHoy");
-            localStorage.removeItem("compras");
-            localStorage.removeItem("fechaActual");
-            localStorage.removeItem("primerLogin");  // Borrar el flag
-            console.log("✅ Primer Login - Datos de trabajo en 0️⃣");
-        }
-
-        // ========== VARIABLES GLOBALES (después de limpiar) ==========
+        // ========== VARIABLES GLOBALES ==========
+        // Cargar datos guardados (si no hay, empieza en 0 automáticamente)
         let compras = JSON.parse(localStorage.getItem("compras")) || [];
         let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
         let capitalAcumulado = Number(localStorage.getItem("capitalGuardado")) || 0;
@@ -1881,6 +1868,30 @@
                     • 💾 Guardar Día: Guarda el resumen y limpias el día<br>
                     • 📊 Ver Resumen Semanal: Ve los últimos 7 días<br>
                     • 🗑️ Reiniciar: Limpia todo si cometiste un error
+                `
+            },
+            resumenSemanal: {
+                titulo: "📊 Resumen Semanal",
+                contenido: `
+                    <strong>Aquí ves un resumen de toda la semana:</strong><br><br>
+                    
+                    <strong>Tabla de Días:</strong><br>
+                    • Fecha: Día de la semana<br>
+                    • Dinero Utilizado: Monto que usaste ese día<br>
+                    • Gastado: Total invertido<br>
+                    • Restante: Lo que te sobró<br>
+                    • Gramos: Total de plata/oro comprado<br><br>
+                    
+                    <strong>Fila TOTAL:</strong><br>
+                    • Capital: Tu capital actual<br>
+                    • Total Gastado: Suma de todo lo gastado la semana<br>
+                    • Total Gramos: Total de gramos comprados<br><br>
+                    
+                    <strong>Botones de Acción:</strong><br>
+                    • 📄 Word: Descarga un resumen profesional en Word<br>
+                    • 🗑️ Nueva: Reinicia para una nueva semana<br><br>
+                    
+                    💡 Click en "Desglose" para ver detalles por cliente y fecha
                 `
             }
         };
