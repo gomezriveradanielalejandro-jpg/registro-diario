@@ -1880,90 +1880,70 @@
 
         // ========== DESCARGAR PDF ==========
         function descargarExcel() {
-            let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
-            if (semana.length === 0) {
-                alert("⚠️ No hay datos para descargar");
-                return;
-            }
-
-            const XLSX = window.XLSX;
-
-            // Calcular totales
-            let totalGastado = semana.reduce((sum, dia) => sum + dia.gastado, 0);
-            let totalGramos = semana.reduce((sum, dia) => sum + dia.gramos, 0);
-            let capitalRestante = capitalAcumulado;
-
-            // ===== HOJA 1: RESUMEN DIARIO =====
-            let datosResumen = [
-                ["💎 CONTROL DIARIO - JOYERÍA"],
-                ["Resumen Semanal"],
-                [],
-                ["Período:", `${semana[0].fecha} a ${semana[semana.length - 1].fecha}`],
-                ["Total Gastado:", `$${totalGastado.toLocaleString('es-ES')}`],
-                ["Total Gramos:", `${totalGramos}g`],
-                [],
-                ["RESUMEN DIARIO"],
-                ["Fecha", "Dinero Utilizado", "Gastado", "Restante", "Gramos"]
-            ];
-
-            semana.forEach(dia => {
-                datosResumen.push([
-                    dia.fecha,
-                    `$${dia.utilizado.toLocaleString('es-ES')}`,
-                    `$${dia.gastado.toLocaleString('es-ES')}`,
-                    `$${dia.restante.toLocaleString('es-ES')}`,
-                    `${dia.gramos}g`
-                ]);
-            });
-
-            datosResumen.push([
-                "TOTAL",
-                "",
-                `$${totalGastado.toLocaleString('es-ES')}`,
-                "",
-                `${totalGramos}g`
-            ]);
-
-            // ===== HOJA 2: RESUMEN POR LEY =====
-            let datosLeyes = [
-                ["RESUMEN POR LEY"],
-                ["Ley", "Gramos", "Gastado"],
-                ["999", "245", "$12,300"],
-                ["925", "398", "$18,900"],
-                ["900", "182", "$8,190"],
-                ["TOTAL", "825", "$39,390"]
-            ];
-
-            // ===== HOJA 3: CAPITAL DE LA SEMANA =====
-            let datosCapital = [
-                ["RESUMEN DE CAPITAL - SEMANA"],
-                ["Concepto", "Cantidad", "Detalles"],
-                ["Capital Restante", `$${capitalRestante.toLocaleString('es-ES')}`, "Lo que te queda"],
-                ["Total Gastado", `$${totalGastado.toLocaleString('es-ES')}`, "En compras"],
-                ["Total Gramos", `${totalGramos}g`, "Plata comprada"]
-            ];
-
-            // ===== CREAR WORKBOOK =====
-            const wb = XLSX.utils.book_new();
+            console.log("✅ Botón Excel clickeado");
             
-            const ws1 = XLSX.utils.aoa_to_sheet(datosResumen);
-            const ws2 = XLSX.utils.aoa_to_sheet(datosLeyes);
-            const ws3 = XLSX.utils.aoa_to_sheet(datosCapital);
+            try {
+                let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
+                console.log("Semana data:", semana);
+                
+                if (semana.length === 0) {
+                    alert("⚠️ No hay datos. Primero guarda días de trabajo.");
+                    return;
+                }
 
-            // Ajustar ancho de columnas
-            ws1['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
-            ws2['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 15 }];
-            ws3['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 20 }];
+                // Calcular
+                let totalGastado = 0;
+                let totalGramos = 0;
+                
+                semana.forEach(dia => {
+                    totalGastado += dia.gastado || 0;
+                    totalGramos += dia.gramos || 0;
+                });
 
-            XLSX.utils.book_append_sheet(wb, ws1, "Resumen Diario");
-            XLSX.utils.book_append_sheet(wb, ws2, "Por Ley");
-            XLSX.utils.book_append_sheet(wb, ws3, "Capital Semana");
+                // Armar CSV
+                let contenido = "RESUMEN SEMANAL - JOYERÍA\n";
+                contenido += "=".repeat(50) + "\n\n";
+                contenido += "Período," + semana[0].fecha + " a " + semana[semana.length-1].fecha + "\n";
+                contenido += "Total Gastado," + totalGastado + "\n";
+                contenido += "Total Gramos," + totalGramos + "\n\n";
+                
+                contenido += "RESUMEN DIARIO\n";
+                contenido += "Fecha,Dinero Utilizado,Gastado,Restante,Gramos\n";
+                
+                semana.forEach(dia => {
+                    contenido += dia.fecha + "," + dia.utilizado + "," + dia.gastado + "," + dia.restante + "," + dia.gramos + "\n";
+                });
+                
+                contenido += "TOTAL,,"+totalGastado+",,"+totalGramos+"\n\n";
+                
+                contenido += "CAPITAL DE LA SEMANA\n";
+                contenido += "Concepto,Cantidad,Detalles\n";
+                contenido += "Capital Restante," + capitalAcumulado + ",Lo que te queda\n";
+                contenido += "Total Gastado," + totalGastado + ",En compras\n";
+                contenido += "Total Gramos," + totalGramos + ",Plata comprada\n";
 
-            // Descargar
-            XLSX.writeFile(wb, `Resumen_Semanal_${new Date().toISOString().split('T')[0]}.xlsx`);
-            mostrarNotificacion("✅ Excel descargado");
+                console.log("CSV generado, tamaño:", contenido.length);
+
+                // Crear archivo
+                const blob = new Blob([contenido], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Resumen_' + new Date().toISOString().split('T')[0] + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                console.log("✅ Descarga iniciada");
+                mostrarNotificacion("✅ Archivo descargado");
+                
+            } catch (error) {
+                console.error("❌ Error completo:", error);
+                console.error("Stack:", error.stack);
+                alert("Error: " + error.message);
+            }
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 </body>
 </html>
