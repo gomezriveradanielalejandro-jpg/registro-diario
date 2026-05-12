@@ -886,6 +886,7 @@
     <div id="mainApp">
         <div class="wrapper">
             <div class="header-controls">
+                <button class="logout-btn" onclick="reiniciarTodo()" style="background: linear-gradient(135deg, #dc2626, #991b1b); margin-right: 10px;">🔄 Reiniciar Todo</button>
                 <button class="logout-btn" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
             </div>
 
@@ -1118,10 +1119,22 @@
 
             // Validación simple
             if (user === "tony" && pass === "1977") {
-                localStorage.setItem("sesionActiva", "true");
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("mainApp").style.display = "block";
-                iniciarApp();
+                // Login en Firebase (anónimo)
+                auth.signInAnonymously().then(() => {
+                    console.log("✅ Autenticado en Firebase");
+                    localStorage.setItem("sesionActiva", "true");
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("mainApp").style.display = "block";
+                    iniciarApp();
+                    // Sincronizar datos después de entrar
+                    setTimeout(sincronizarDatos, 1000);
+                }).catch(error => {
+                    console.log("Usando modo offline (sin Firebase)");
+                    localStorage.setItem("sesionActiva", "true");
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("mainApp").style.display = "block";
+                    iniciarApp();
+                });
             } else {
                 error.textContent = "❌ Usuario o contraseña incorrectos";
                 error.style.display = "block";
@@ -1136,6 +1149,17 @@
                 
                 console.log("✅ Sesión cerrada - Datos mantenidos");
                 location.reload();
+            }
+        }
+
+        function reiniciarTodo() {
+            if (confirm("⚠️ ¿Estás SEGURO de borrar TODOS los datos?\n\nEsto borrará:\n- Capital\n- Compras del día\n- Resumen semanal\n- Todo lo guardado\n\nEsta acción NO se puede deshacer.")) {
+                if (confirm("⚠️ ÚLTIMA CONFIRMACIÓN\n\n¿Realmente quieres BORRAR TODO?")) {
+                    localStorage.clear();
+                    console.log("✅ TODO borrado");
+                    alert("✅ Todos los datos han sido borrados");
+                    location.reload();
+                }
             }
         }
 
@@ -2162,4 +2186,110 @@
     </script>
 </body>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+
+<!-- ========== FIREBASE SCRIPTS ========== -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+
+<script>
+    // ========== CONFIGURACIÓN DE FIREBASE ==========
+    const firebaseConfig = {
+        apiKey: "AIzaSyBf4dkM8NT9jZrVVasptpoM5PXLg9p6Vz4",
+        authDomain: "joyeria-control.firebaseapp.com",
+        projectId: "joyeria-control",
+        storageBucket: "joyeria-control.firebasestorage.app",
+        messagingSenderId: "554839161989",
+        appId: "1:554839161989:web:240d09b34dffd1e0acfdec",
+        measurementId: "G-19B6XDRFVG"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // ========== FUNCIONES DE SINCRONIZACIÓN FIREBASE ==========
+    
+    // Guardar datos en Firestore
+    async function guardarEnFirestore(usuario, coleccion, datos) {
+        try {
+            await db.collection(usuario).doc(coleccion).set(datos, { merge: true });
+            console.log("✅ Datos guardados en Firestore");
+        } catch (error) {
+            console.error("Error guardando en Firestore:", error);
+            // Fallback a localStorage si falla
+            localStorage.setItem(coleccion, JSON.stringify(datos));
+        }
+    }
+
+    // Cargar datos de Firestore
+    async function cargarDeFirestore(usuario, coleccion) {
+        try {
+            const doc = await db.collection(usuario).doc(coleccion).get();
+            if (doc.exists) {
+                console.log("✅ Datos cargados de Firestore");
+                return doc.data();
+            }
+            return null;
+        } catch (error) {
+            console.error("Error cargando de Firestore:", error);
+            // Fallback a localStorage
+            const local = localStorage.getItem(coleccion);
+            return local ? JSON.parse(local) : null;
+        }
+    }
+
+    // Usuario actual
+    let usuarioActual = null;
+
+    // Detectar cuando el usuario inicia sesión
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            usuarioActual = user.uid;
+            console.log("✅ Usuario autenticado:", usuarioActual);
+            // Sincronizar datos cuando inicia sesión
+            await sincronizarDatos();
+        } else {
+            usuarioActual = null;
+        }
+    });
+
+    // Sincronizar datos entre dispositivos
+    async function sincronizarDatos() {
+        if (!usuarioActual) {
+            console.log("No hay usuario autenticado");
+            return;
+        }
+
+        try {
+            // Cargar datos de Firestore
+            const capital = await cargarDeFirestore(usuarioActual, "capital");
+            const compras = await cargarDeFirestore(usuarioActual, "compras");
+            const resumen = await cargarDeFirestore(usuarioActual, "resumenSemanal");
+
+            // Actualizar localStorage con datos de Firestore
+            if (capital) localStorage.setItem("capitalGuardado", JSON.stringify(capital));
+            if (compras) localStorage.setItem("compras", JSON.stringify(compras));
+            if (resumen) localStorage.setItem("resumenSemanal", JSON.stringify(resumen));
+
+            console.log("✅ Sincronización completada");
+        } catch (error) {
+            console.error("Error sincronizando:", error);
+        }
+    }
+
+    // Override de localStorage.setItem para sincronizar con Firebase
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+        originalSetItem.apply(this, arguments);
+        
+        // Sincronizar con Firebase después de 500ms
+        if (usuarioActual && ['capitalGuardado', 'compras', 'resumenSemanal'].includes(key)) {
+            setTimeout(() => {
+                guardarEnFirestore(usuarioActual, key, { data: value });
+            }, 500);
+        }
+    };
+</script>
 </html>
