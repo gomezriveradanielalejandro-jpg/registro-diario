@@ -1049,7 +1049,10 @@
     <div id="miModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="cerrarModal()">&times;</button>
-            <h2 id="modalTitulo">Historial</h2>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <h2 id="modalTitulo" style="margin: 0; flex: 1;">Historial</h2>
+                <button class="btn-help" onclick="abrirGuia('resumen')" style="width: 42px; height: 42px; border-radius: 50%; background: #00A3E0; color: white; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">?</button>
+            </div>
             
             <div id="filtroClienteContainer">
                 <select id="filtroCliente" onchange="renderTablaDesglose()" style="margin-bottom: 15px;">
@@ -1124,7 +1127,10 @@
 
         function cerrarSesion() {
             if (confirm("¿Cerrar sesión?")) {
+                // Solo borrar la sesión activa, mantener TODOS los datos
                 localStorage.removeItem("sesionActiva");
+                
+                console.log("✅ Sesión cerrada - Datos mantenidos");
                 location.reload();
             }
         }
@@ -1200,9 +1206,24 @@
         // ========== VARIABLES GLOBALES ==========
         let compras = JSON.parse(localStorage.getItem("compras")) || [];
         let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
-        let capitalAcumulado = Number(localStorage.getItem("capitalGuardado")) || 0;
-        let montoUtilizadoDia = Number(localStorage.getItem("utilizadoHoy")) || 0;
-        let dineroDisponibleHoy = Number(localStorage.getItem("dineroHoy")) || 0;
+        // ========== VARIABLES GLOBALES ==========
+        // Verificar si es la primera vez que abre la app
+        let esPrimeraVez = localStorage.getItem("primeraVez") !== "false";
+        
+        // Si es primera vez, LIMPIAR TODO (menos clientes)
+        if (esPrimeraVez) {
+            localStorage.removeItem("capitalGuardado");
+            localStorage.removeItem("utilizadoHoy");
+            localStorage.removeItem("dineroHoy");
+            localStorage.removeItem("comprasDelDia");
+            localStorage.removeItem("resumenSemanal");
+            console.log("✅ Primera vez - Datos inicializados en 0");
+        }
+        
+        // Ahora inicializar variables
+        let capitalAcumulado = !esPrimeraVez ? (Number(localStorage.getItem("capitalGuardado")) || 0) : 0;
+        let montoUtilizadoDia = !esPrimeraVez ? (Number(localStorage.getItem("utilizadoHoy")) || 0) : 0;
+        let dineroDisponibleHoy = !esPrimeraVez ? (Number(localStorage.getItem("dineroHoy")) || 0) : 0;
         let comprasDiaGlobal = [];
         let clienteEditando = "";
 
@@ -1231,6 +1252,7 @@
 
             capitalAcumulado = valor;
             localStorage.setItem("capitalGuardado", capitalAcumulado);
+            localStorage.setItem("primeraVez", "false");  // Marcar que ya no es primera vez
             input.disabled = true;
             actualizarVista();
             mostrarNotificacion("✅ Capital guardado");
@@ -1602,11 +1624,11 @@
 
             cont.innerHTML += `<tr class="total-row">
                 <td>TOTAL</td>
-                <td>-</td>
+                <td><strong>Capital: $${capitalAcumulado.toLocaleString('en-US', { maximumFractionDigits: 2 })}</strong></td>
                 <td>$${totalGastado.toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
                 <td>-</td>
                 <td>${totalGramos} g</td>
-                <td><button class="btn-secondary" onclick="descargarExcel()" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.2)); color: #10b981; border: 1px solid #10b981; margin-bottom: 8px; display: block; width: 100%;">📊 Excel</button><button class="btn-danger" onclick="limpiarSemana()">🗑️ Nueva</button></td>
+                <td><button class="btn-secondary" onclick="descargarExcel()" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.2)); color: #10b981; border: 1px solid #10b981; margin-bottom: 8px; display: block; width: 100%;">📄 Word</button><button class="btn-danger" onclick="limpiarSemana()">🗑️ Nueva</button></td>
             </tr>`;
 
             document.getElementById("miModal").classList.add("active");
@@ -1880,18 +1902,25 @@
 
         // ========== DESCARGAR PDF ==========
         function descargarExcel() {
-            console.log("✅ Botón Excel clickeado");
+            console.log("✅ Botón Word clickeado");
             
             try {
-                let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
-                console.log("Semana data:", semana);
-                
-                if (semana.length === 0) {
-                    alert("⚠️ No hay datos. Primero guarda días de trabajo.");
+                // Verificar que docx esté disponible
+                if (typeof window.docx === 'undefined') {
+                    alert("⚠️ Cargando librería... recarga la página e intenta de nuevo");
                     return;
                 }
 
-                // Calcular
+                let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
+                
+                if (semana.length === 0) {
+                    alert("⚠️ No hay datos semanales para descargar");
+                    return;
+                }
+
+                const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, ShadingType } = window.docx;
+
+                // Calcular totales
                 let totalGastado = 0;
                 let totalGramos = 0;
                 
@@ -1900,50 +1929,223 @@
                     totalGramos += dia.gramos || 0;
                 });
 
-                // Armar CSV
-                let contenido = "RESUMEN SEMANAL - JOYERÍA\n";
-                contenido += "=".repeat(50) + "\n\n";
-                contenido += "Período," + semana[0].fecha + " a " + semana[semana.length-1].fecha + "\n";
-                contenido += "Total Gastado," + totalGastado + "\n";
-                contenido += "Total Gramos," + totalGramos + "\n\n";
-                
-                contenido += "RESUMEN DIARIO\n";
-                contenido += "Fecha,Dinero Utilizado,Gastado,Restante,Gramos\n";
-                
-                semana.forEach(dia => {
-                    contenido += dia.fecha + "," + dia.utilizado + "," + dia.gastado + "," + dia.restante + "," + dia.gramos + "\n";
+                const colorGold = "D4AF37";
+                const colorDarkBlue = "002D72";
+                const borderGold = { style: BorderStyle.SINGLE, size: 12, color: colorGold };
+                const borderGray = { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" };
+
+                // Función para crear celdas
+                const createHeaderCell = (text) => new TableCell({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    shading: { fill: colorGold, type: ShadingType.CLEAR },
+                    margins: { top: 80, bottom: 80, left: 120, right: 120 },
+                    borders: { top: borderGold, bottom: borderGold, left: borderGold, right: borderGold },
+                    children: [new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text, bold: true, color: colorDarkBlue, size: 22 })]
+                    })]
                 });
-                
-                contenido += "TOTAL,,"+totalGastado+",,"+totalGramos+"\n\n";
-                
-                contenido += "CAPITAL DE LA SEMANA\n";
-                contenido += "Concepto,Cantidad,Detalles\n";
-                contenido += "Capital Restante," + capitalAcumulado + ",Lo que te queda\n";
-                contenido += "Total Gastado," + totalGastado + ",En compras\n";
-                contenido += "Total Gramos," + totalGramos + ",Plata comprada\n";
 
-                console.log("CSV generado, tamaño:", contenido.length);
+                const createDataCell = (text) => new TableCell({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    shading: { fill: "FFFFFF", type: ShadingType.CLEAR },
+                    margins: { top: 80, bottom: 80, left: 120, right: 120 },
+                    borders: { top: borderGray, bottom: borderGray, left: borderGray, right: borderGray },
+                    children: [new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text, size: 22 })]
+                    })]
+                });
 
-                // Crear archivo
-                const blob = new Blob([contenido], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'Resumen_' + new Date().toISOString().split('T')[0] + '.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
+                const createTotalCell = (text) => new TableCell({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    shading: { fill: colorGold, type: ShadingType.CLEAR },
+                    margins: { top: 80, bottom: 80, left: 120, right: 120 },
+                    borders: { top: borderGold, bottom: borderGold, left: borderGold, right: borderGold },
+                    children: [new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text, bold: true, color: colorDarkBlue, size: 22 })]
+                    })]
+                });
 
-                console.log("✅ Descarga iniciada");
-                mostrarNotificacion("✅ Archivo descargado");
-                
+                // Crear documento
+                const doc = new Document({
+                    sections: [{
+                        properties: {
+                            page: {
+                                size: { width: 12240, height: 15840 },
+                                margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+                            }
+                        },
+                        children: [
+                            // Encabezado
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                spacing: { after: 100 },
+                                children: [new TextRun({
+                                    text: "💎 CONTROL DIARIO - JOYERÍA",
+                                    bold: true,
+                                    size: 32,
+                                    color: colorDarkBlue
+                                })]
+                            }),
+
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                spacing: { after: 400 },
+                                children: [new TextRun({
+                                    text: "Resumen Semanal",
+                                    bold: true,
+                                    size: 28,
+                                    color: colorGold
+                                })]
+                            }),
+
+                            // Información general
+                            new Paragraph({
+                                spacing: { before: 100, after: 100 },
+                                children: [
+                                    new TextRun({ text: "Período: ", bold: true, size: 22 }),
+                                    new TextRun({ text: `${semana[0].fecha} a ${semana[semana.length - 1].fecha}`, size: 22 })
+                                ]
+                            }),
+
+                            new Paragraph({
+                                spacing: { before: 50, after: 200 },
+                                children: [new TextRun({
+                                    text: `Total Gastado: $${totalGastado.toLocaleString('es-ES')} | Total Gramos: ${totalGramos}g`,
+                                    bold: true,
+                                    size: 22,
+                                    color: colorGold
+                                })]
+                            }),
+
+                            // Tabla Resumen Diario
+                            new Paragraph({
+                                spacing: { before: 100, after: 100 },
+                                children: [new TextRun({
+                                    text: "Resumen Diario",
+                                    bold: true,
+                                    size: 24,
+                                    color: colorDarkBlue
+                                })]
+                            }),
+
+                            new Table({
+                                width: { size: 9360, type: WidthType.DXA },
+                                columnWidths: [1560, 1872, 1872, 1872, 1184],
+                                rows: [
+                                    new TableRow({
+                                        children: [
+                                            createHeaderCell("Fecha"),
+                                            createHeaderCell("Dinero Util."),
+                                            createHeaderCell("Gastado"),
+                                            createHeaderCell("Restante"),
+                                            createHeaderCell("Gramos")
+                                        ]
+                                    }),
+                                    ...semana.map(dia => new TableRow({
+                                        children: [
+                                            createDataCell(dia.fecha),
+                                            createDataCell(`$${dia.utilizado.toLocaleString('es-ES')}`),
+                                            createDataCell(`$${dia.gastado.toLocaleString('es-ES')}`),
+                                            createDataCell(`$${dia.restante.toLocaleString('es-ES')}`),
+                                            createDataCell(`${dia.gramos}g`)
+                                        ]
+                                    })),
+                                    new TableRow({
+                                        children: [
+                                            createTotalCell("TOTAL"),
+                                            createTotalCell(""),
+                                            createTotalCell(`$${totalGastado.toLocaleString('es-ES')}`),
+                                            createTotalCell(""),
+                                            createTotalCell(`${totalGramos}g`)
+                                        ]
+                                    })
+                                ]
+                            }),
+
+                            new Paragraph({ spacing: { after: 300 }, children: [new TextRun("")] }),
+
+                            // Tabla Capital
+                            new Paragraph({
+                                spacing: { before: 100, after: 100 },
+                                children: [new TextRun({
+                                    text: "Resumen de Capital - Semana",
+                                    bold: true,
+                                    size: 24,
+                                    color: colorDarkBlue
+                                })]
+                            }),
+
+                            new Table({
+                                width: { size: 6240, type: WidthType.DXA },
+                                columnWidths: [2080, 2080, 2080],
+                                rows: [
+                                    new TableRow({
+                                        children: [
+                                            createHeaderCell("Concepto"),
+                                            createHeaderCell("Cantidad"),
+                                            createHeaderCell("Detalles")
+                                        ]
+                                    }),
+                                    new TableRow({
+                                        children: [
+                                            createDataCell("Capital Restante"),
+                                            createDataCell(`$${capitalAcumulado.toLocaleString('es-ES')}`),
+                                            createDataCell("Lo que te queda")
+                                        ]
+                                    }),
+                                    new TableRow({
+                                        children: [
+                                            createDataCell("Total Gastado"),
+                                            createDataCell(`$${totalGastado.toLocaleString('es-ES')}`),
+                                            createDataCell("En compras")
+                                        ]
+                                    }),
+                                    new TableRow({
+                                        children: [
+                                            createDataCell("Total Gramos"),
+                                            createDataCell(`${totalGramos}g`),
+                                            createDataCell("Plata comprada")
+                                        ]
+                                    })
+                                ]
+                            }),
+
+                            // Footer
+                            new Paragraph({
+                                spacing: { before: 300, after: 0 },
+                                border: { top: { style: BorderStyle.SINGLE, size: 6, color: colorGold } },
+                                children: [new TextRun({
+                                    text: "Generado por: Control Diario - Joyería | " + new Date().toLocaleDateString('es-ES'),
+                                    size: 18,
+                                    color: "999999"
+                                })]
+                            })
+                        ]
+                    }]
+                });
+
+                // Generar y descargar
+                Packer.toBlob(doc).then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Resumen_Semanal_${new Date().toISOString().split('T')[0]}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    mostrarNotificacion("✅ Word descargado");
+                });
+
             } catch (error) {
-                console.error("❌ Error completo:", error);
-                console.error("Stack:", error.stack);
-                alert("Error: " + error.message);
+                console.error("Error:", error);
+                alert("❌ Error: " + error.message);
             }
         }
     </script>
 </body>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 </html>
