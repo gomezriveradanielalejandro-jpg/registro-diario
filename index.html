@@ -891,7 +891,6 @@
     <div id="mainApp">
         <div class="wrapper">
             <div class="header-controls">
-                <button class="logout-btn" onclick="reiniciarTodo()" style="background: linear-gradient(135deg, #dc2626, #991b1b); margin-right: 10px;">🔄 Reiniciar Todo</button>
                 <button class="logout-btn" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
             </div>
 
@@ -1778,6 +1777,10 @@
             localStorage.removeItem("compras");
             montoUtilizadoDia = 0;
             dineroDisponibleHoy = 0;
+            
+            // LIMPIAR localStorage para que no carguen al recargar
+            localStorage.removeItem("utilizadoHoy");
+            localStorage.removeItem("dineroHoy");
 
             document.getElementById("v_utilizado").innerText = "0";
             document.getElementById("montoUtilizado").value = "";
@@ -2199,6 +2202,7 @@
 <script>
     // ========== CONFIGURACIÓN DE FIREBASE ==========
     let db, auth, usuarioActual = null;
+    const USUARIO_FIJO = "tony_joyeria"; // ID compartido entre todos los dispositivos
 
     // Esperar a que Firebase esté disponible
     function inicializarFirebase() {
@@ -2229,8 +2233,9 @@
             // Detectar cuando el usuario inicia sesión
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    usuarioActual = user.uid;
-                    console.log("✅ Usuario autenticado:", usuarioActual);
+                    // Usar ID FIJO para que todos los dispositivos compartan datos
+                    usuarioActual = USUARIO_FIJO;
+                    console.log("✅ Usuario autenticado, usando ID compartido:", usuarioActual);
                     // Sincronizar datos cuando inicia sesión
                     await sincronizarDatos();
                 } else {
@@ -2292,15 +2297,48 @@
         }
 
         try {
-            const capital = await cargarDeFirestore(usuarioActual, "capital");
-            const compras = await cargarDeFirestore(usuarioActual, "compras");
+            console.log("🔄 Descargando datos de Firebase...");
+            
+            const capital = await cargarDeFirestore(usuarioActual, "capitalGuardado");
+            const comprasData = await cargarDeFirestore(usuarioActual, "compras");
             const resumen = await cargarDeFirestore(usuarioActual, "resumenSemanal");
+            const clientesData = await cargarDeFirestore(usuarioActual, "clientes");
+            const dineroHoy = await cargarDeFirestore(usuarioActual, "dineroHoy");
+            const utilizadoHoy = await cargarDeFirestore(usuarioActual, "utilizadoHoy");
 
-            if (capital) localStorage.setItem("capitalGuardado", JSON.stringify(capital));
-            if (compras) localStorage.setItem("compras", JSON.stringify(compras));
-            if (resumen) localStorage.setItem("resumenSemanal", JSON.stringify(resumen));
+            // Actualizar localStorage con datos de Firestore
+            if (capital && capital.data) {
+                localStorage.setItem("capitalGuardado", capital.data);
+                capitalAcumulado = Number(capital.data) || 0;
+            }
+            if (comprasData && comprasData.data) {
+                localStorage.setItem("compras", comprasData.data);
+                compras = JSON.parse(comprasData.data) || [];
+            }
+            if (resumen && resumen.data) {
+                localStorage.setItem("resumenSemanal", resumen.data);
+            }
+            if (clientesData && clientesData.data) {
+                localStorage.setItem("clientes", clientesData.data);
+                clientes = JSON.parse(clientesData.data) || [];
+            }
+            if (dineroHoy && dineroHoy.data) {
+                localStorage.setItem("dineroHoy", dineroHoy.data);
+                dineroDisponibleHoy = Number(dineroHoy.data) || 0;
+            }
+            if (utilizadoHoy && utilizadoHoy.data) {
+                localStorage.setItem("utilizadoHoy", utilizadoHoy.data);
+                montoUtilizadoDia = Number(utilizadoHoy.data) || 0;
+            }
+
+            // Actualizar la vista con los nuevos datos
+            document.getElementById("capitalInicial").value = capitalAcumulado || "";
+            document.getElementById("v_utilizado").innerText = montoUtilizadoDia.toLocaleString();
+            cargarClientes();
+            actualizarVista();
 
             console.log("✅ Sincronización completada");
+            mostrarNotificacion("✅ Datos sincronizados");
         } catch (error) {
             console.error("Error sincronizando:", error);
         }
@@ -2311,9 +2349,24 @@
     Storage.prototype.setItem = function(key, value) {
         originalSetItem.apply(this, arguments);
         
-        if (usuarioActual && db && ['capitalGuardado', 'compras', 'resumenSemanal'].includes(key)) {
+        // Sincronizar TODOS los datos importantes con Firebase
+        const datosImportantes = ['capitalGuardado', 'compras', 'resumenSemanal', 'clientes', 'dineroHoy', 'utilizadoHoy'];
+        if (usuarioActual && db && datosImportantes.includes(key)) {
             setTimeout(() => {
                 guardarEnFirestore(usuarioActual, key, { data: value });
+            }, 500);
+        }
+    };
+
+    // Override de localStorage.removeItem para sincronizar borrados
+    const originalRemoveItem = Storage.prototype.removeItem;
+    Storage.prototype.removeItem = function(key) {
+        originalRemoveItem.apply(this, arguments);
+        
+        const datosImportantes = ['compras', 'resumenSemanal', 'dineroHoy', 'utilizadoHoy'];
+        if (usuarioActual && db && datosImportantes.includes(key)) {
+            setTimeout(() => {
+                guardarEnFirestore(usuarioActual, key, { data: null });
             }, 500);
         }
     };
