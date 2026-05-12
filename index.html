@@ -864,6 +864,11 @@
             margin-top: 5px;
         }
     </style>
+
+    <!-- ========== FIREBASE SCRIPTS (CARGAR PRIMERO) ========== -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-compat/app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-compat/firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-compat/auth.js"></script>
 </head>
 <body>
     <!-- ========== LOGIN SCREEN ========== -->
@@ -1165,11 +1170,14 @@
 
         // Verificar si hay sesión activa al cargar
         window.addEventListener('load', function() {
-            if (localStorage.getItem("sesionActiva") === "true") {
-                document.getElementById("loginScreen").style.display = "none";
-                document.getElementById("mainApp").style.display = "block";
-                iniciarApp();
-            }
+            // Esperar a que Firebase esté listo
+            setTimeout(() => {
+                if (localStorage.getItem("sesionActiva") === "true") {
+                    document.getElementById("loginScreen").style.display = "none";
+                    document.getElementById("mainApp").style.display = "block";
+                    iniciarApp();
+                }
+            }, 1000);
         });
 
         // ========== INICIAR APP ==========
@@ -2187,44 +2195,80 @@
 </body>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 
-<!-- ========== FIREBASE SCRIPTS (COMPAT VERSION) ========== -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-compat/app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-compat/firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-compat/auth.js"></script>
-
 <script>
     // ========== CONFIGURACIÓN DE FIREBASE ==========
-    const firebaseConfig = {
-        apiKey: "AIzaSyBf4dkM8NT9jZrVVasptpoM5PXLg9p6Vz4",
-        authDomain: "joyeria-control.firebaseapp.com",
-        projectId: "joyeria-control",
-        storageBucket: "joyeria-control.firebasestorage.app",
-        messagingSenderId: "554839161989",
-        appId: "1:554839161989:web:240d09b34dffd1e0acfdec",
-        measurementId: "G-19B6XDRFVG"
-    };
+    let db, auth, usuarioActual = null;
 
-    // Inicializar Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+    // Esperar a que Firebase esté disponible
+    function inicializarFirebase() {
+        if (typeof firebase === 'undefined') {
+            console.log("⏳ Firebase aún no cargado, reintentando...");
+            setTimeout(inicializarFirebase, 500);
+            return;
+        }
+
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyBf4dkM8NT9jZrVVasptpoM5PXLg9p6Vz4",
+                authDomain: "joyeria-control.firebaseapp.com",
+                projectId: "joyeria-control",
+                storageBucket: "joyeria-control.firebasestorage.app",
+                messagingSenderId: "554839161989",
+                appId: "1:554839161989:web:240d09b34dffd1e0acfdec",
+                measurementId: "G-19B6XDRFVG"
+            };
+
+            // Inicializar Firebase
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            
+            console.log("✅ Firebase inicializado correctamente");
+
+            // Detectar cuando el usuario inicia sesión
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    usuarioActual = user.uid;
+                    console.log("✅ Usuario autenticado:", usuarioActual);
+                    // Sincronizar datos cuando inicia sesión
+                    await sincronizarDatos();
+                } else {
+                    usuarioActual = null;
+                }
+            });
+        } catch (error) {
+            console.error("Error inicializando Firebase:", error);
+        }
+    }
+
+    // Iniciar Firebase cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', inicializarFirebase);
 
     // ========== FUNCIONES DE SINCRONIZACIÓN FIREBASE ==========
     
     // Guardar datos en Firestore
     async function guardarEnFirestore(usuario, coleccion, datos) {
+        if (!db) {
+            console.log("Firebase no inicializado, usando localStorage");
+            localStorage.setItem(coleccion, JSON.stringify(datos));
+            return;
+        }
         try {
             await db.collection(usuario).doc(coleccion).set(datos, { merge: true });
             console.log("✅ Datos guardados en Firestore");
         } catch (error) {
             console.error("Error guardando en Firestore:", error);
-            // Fallback a localStorage si falla
             localStorage.setItem(coleccion, JSON.stringify(datos));
         }
     }
 
     // Cargar datos de Firestore
     async function cargarDeFirestore(usuario, coleccion) {
+        if (!db) {
+            console.log("Firebase no inicializado, usando localStorage");
+            const local = localStorage.getItem(coleccion);
+            return local ? JSON.parse(local) : null;
+        }
         try {
             const doc = await db.collection(usuario).doc(coleccion).get();
             if (doc.exists) {
@@ -2234,41 +2278,23 @@
             return null;
         } catch (error) {
             console.error("Error cargando de Firestore:", error);
-            // Fallback a localStorage
             const local = localStorage.getItem(coleccion);
             return local ? JSON.parse(local) : null;
         }
     }
 
-    // Usuario actual
-    let usuarioActual = null;
-
-    // Detectar cuando el usuario inicia sesión
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            usuarioActual = user.uid;
-            console.log("✅ Usuario autenticado:", usuarioActual);
-            // Sincronizar datos cuando inicia sesión
-            await sincronizarDatos();
-        } else {
-            usuarioActual = null;
-        }
-    });
-
     // Sincronizar datos entre dispositivos
     async function sincronizarDatos() {
-        if (!usuarioActual) {
-            console.log("No hay usuario autenticado");
+        if (!usuarioActual || !db) {
+            console.log("No hay usuario o Firebase no inicializado");
             return;
         }
 
         try {
-            // Cargar datos de Firestore
             const capital = await cargarDeFirestore(usuarioActual, "capital");
             const compras = await cargarDeFirestore(usuarioActual, "compras");
             const resumen = await cargarDeFirestore(usuarioActual, "resumenSemanal");
 
-            // Actualizar localStorage con datos de Firestore
             if (capital) localStorage.setItem("capitalGuardado", JSON.stringify(capital));
             if (compras) localStorage.setItem("compras", JSON.stringify(compras));
             if (resumen) localStorage.setItem("resumenSemanal", JSON.stringify(resumen));
@@ -2284,12 +2310,12 @@
     Storage.prototype.setItem = function(key, value) {
         originalSetItem.apply(this, arguments);
         
-        // Sincronizar con Firebase después de 500ms
-        if (usuarioActual && ['capitalGuardado', 'compras', 'resumenSemanal'].includes(key)) {
+        if (usuarioActual && db && ['capitalGuardado', 'compras', 'resumenSemanal'].includes(key)) {
             setTimeout(() => {
                 guardarEnFirestore(usuarioActual, key, { data: value });
             }, 500);
         }
     };
+
 </script>
 </html>
