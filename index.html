@@ -369,6 +369,30 @@
             gap: 10px;
             margin-top: 15px;
             flex-wrap: wrap;
+            align-items: stretch;
+        }
+
+        .btn-group input {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .btn-group.capital-row {
+            flex-wrap: nowrap;
+        }
+
+        .btn-group.capital-row input {
+            flex: 1;
+        }
+
+        .btn-group.monto-row {
+            align-items: center;
+        }
+
+        .btn-group.monto-row input {
+            flex: 1;
+            padding: 16px 14px;
+            font-size: 1.1em;
         }
 
         button {
@@ -424,24 +448,61 @@
             transform: translateY(-2px);
         }
 
-        .btn-icon {
-            width: 48px;
-            height: 48px;
+        .btn-help {
+            width: 42px;
+            height: 42px;
             padding: 0;
-            min-height: 48px;
-            border-radius: 12px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 2px solid #60a5fa;
+            font-weight: 700;
             font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0;
+            min-height: 42px;
+        }
+
+        .btn-help:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            flex: 1;
+        }
+
+        .btn-icon {
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            min-height: 56px;
+            border-radius: 12px;
+            font-size: 1.4em;
             flex: 0;
         }
 
         /* Botones pequeños para capital */
         .btn-small-icon {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             padding: 0;
-            min-height: 40px;
+            min-height: 48px;
             border-radius: 10px;
-            font-size: 1.1em;
+            font-size: 1.2em;
             flex: 0;
         }
 
@@ -724,11 +785,25 @@
             }
 
             .btn-group {
-                flex-direction: column;
+                flex-direction: row;
             }
 
-            .btn-group button {
+            .btn-group.capital-row {
+                flex-wrap: nowrap;
+            }
+
+            .btn-group.capital-row input {
                 flex: 1;
+            }
+
+            .btn-group.monto-row {
+                flex-wrap: nowrap;
+            }
+
+            .btn-group.monto-row input {
+                flex: 1;
+                padding: 14px 10px;
+                font-size: 1em;
             }
 
             .tabla-rapida th,
@@ -816,7 +891,10 @@
             <!-- SECCIÓN 1: INFORMACIÓN DEL DÍA -->
             <div class="container">
                 <div class="card">
-                    <h2>Información del Día</h2>
+                    <div class="section-header">
+                        <h2>Información del Día</h2>
+                        <button class="btn-help" onclick="abrirGuia('informacion')" title="Ayuda">?</button>
+                    </div>
                     
                     <div class="form-group">
                         <label>Fecha de hoy</label>
@@ -825,18 +903,17 @@
 
                     <div class="form-group">
                         <label>Capital Inicial</label>
-                        <div class="btn-group">
+                        <div class="btn-group capital-row">
                             <input type="number" id="capitalInicial" placeholder="0.00" disabled>
                             <button class="btn-primary btn-small-icon" onclick="editarCapital()" title="Editar">✏️</button>
                             <button class="btn-small-icon btn-secondary" onclick="guardarCapital()" title="Guardar">✅</button>
                         </div>
-                        <p class="help-text">Edita solo cuando necesites cambiar el capital inicial</p>
                     </div>
 
                     <div class="form-group">
                         <label>Monto a utilizar hoy</label>
-                        <div class="btn-group">
-                            <input type="number" id="montoUtilizado" placeholder="Ej: 500" min="0" class="input-large">
+                        <div class="btn-group monto-row">
+                            <input type="number" id="montoUtilizado" placeholder="Ej: 500" min="0">
                             <button class="btn-primary btn-icon" onclick="actualizarCapital()">➕</button>
                         </div>
                     </div>
@@ -864,7 +941,10 @@
 
             <!-- SECCIÓN 2: REGISTRAR COMPRA (TODO JUNTO) -->
             <div class="card full">
-                <h2>Registrar Compra</h2>
+                <div class="section-header">
+                    <h2>Registrar Compra</h2>
+                    <button class="btn-help" onclick="abrirGuia('registrar')" title="Ayuda">?</button>
+                </div>
 
                 <div class="form-group">
                     <label>Cliente</label>
@@ -876,7 +956,12 @@
                     </div>
                 </div>
 
-                <p class="help-text">Completa la tabla de abajo con los datos de la compra</p>
+                <div style="margin-top: 20px; margin-bottom: 15px;">
+                    <div class="section-header" style="margin-bottom: 0;">
+                        <h3 style="margin: 0;">Tabla de Compra</h3>
+                        <button class="btn-help" onclick="abrirGuia('tabla')" title="Ayuda">?</button>
+                    </div>
+                </div>
 
                 <div style="overflow-x: auto;">
                     <table class="tabla-rapida">
@@ -914,7 +999,10 @@
 
             <!-- SECCIÓN 3: RESUMEN -->
             <div class="card full">
-                <h2>Resumen del Día</h2>
+                <div class="section-header">
+                    <h2>Resumen del Día</h2>
+                    <button class="btn-help" onclick="abrirGuia('resumen')" title="Ayuda">?</button>
+                </div>
 
                 <div class="form-group">
                     <h3>Resumen de Clientes</h3>
@@ -950,6 +1038,14 @@
     </div>
 
     <!-- ========== MODALES ========== -->
+    <div id="modalGuia" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarGuia()">&times;</button>
+            <h2 id="guiaTitulo">Guía de Usuario</h2>
+            <div id="guiaContenido" style="line-height: 1.8; font-size: 0.95em;"></div>
+        </div>
+    </div>
+
     <div id="miModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="cerrarModal()">&times;</button>
@@ -1045,6 +1141,49 @@
         // ========== INICIAR APP ==========
         function iniciarApp() {
             document.getElementById("fecha").valueAsDate = new Date();
+            
+            // Verificar si cambió el día
+            let fechaGuardada = localStorage.getItem("fechaActual");
+            let fechaHoy = new Date().toISOString().split('T')[0];
+            
+            // Si es un día nuevo, limpiar compras del día anterior pero guardar en historial
+            if (fechaGuardada && fechaGuardada !== fechaHoy) {
+                // El día cambió - guardar automáticamente si hay compras pendientes
+                if (compras.length > 0) {
+                    let totalGastado = 0;
+                    let totalGramos = 0;
+                    compras.forEach(c => {
+                        totalGastado += c.total;
+                        totalGramos += c.gramos;
+                    });
+                    
+                    let resumenDia = {
+                        fecha: fechaGuardada,
+                        capitalInicial: capitalAcumulado + montoUtilizadoDia + dineroDisponibleHoy - totalGastado,
+                        utilizado: montoUtilizadoDia,
+                        gastado: totalGastado,
+                        restante: dineroDisponibleHoy - totalGastado,
+                        gramos: totalGramos,
+                        compras: compras
+                    };
+                    
+                    let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
+                    semana.push(resumenDia);
+                    localStorage.setItem("resumenSemanal", JSON.stringify(semana));
+                }
+                
+                // Limpiar datos del día anterior
+                compras = [];
+                localStorage.removeItem("compras");
+                montoUtilizadoDia = 0;
+                dineroDisponibleHoy = 0;
+                localStorage.removeItem("utilizadoHoy");
+                localStorage.removeItem("dineroHoy");
+            }
+            
+            // Guardar la fecha actual
+            localStorage.setItem("fechaActual", fechaHoy);
+            
             document.getElementById("capitalInicial").value = capitalAcumulado || "";
             document.getElementById("v_utilizado").innerText = montoUtilizadoDia.toLocaleString();
 
@@ -1442,21 +1581,6 @@
             </tr>`;
 
             let cont = document.getElementById("tablaDesglose");
-            
-            // Agregar instrucciones
-            let instrucciones = document.createElement("div");
-            instrucciones.style.cssText = "background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; border-left: 3px solid #60a5fa; font-size: 0.85em; line-height: 1.5;";
-            instrucciones.innerHTML = `
-                <strong>📊 Qué ves aquí:</strong><br>
-                • <strong>Dinero Utilizado:</strong> Capital que sacaste para trabajar ese día<br>
-                • <strong>Gastado:</strong> Dinero invertido en compras de oro/plata<br>
-                • <strong>Restante:</strong> Dinero que sobró (Utilizado - Gastado)<br>
-                • <strong>Gramos:</strong> Total de oro/plata comprado
-            `;
-            
-            let tableContainer = document.createElement("div");
-            tableContainer.style.overflow = "x: auto";
-            
             cont.innerHTML = "";
 
             let totalGastado = 0;
@@ -1482,17 +1606,8 @@
                 <td>$${totalGastado.toLocaleString('en-US', { maximumFractionDigits: 2 })}</td>
                 <td>-</td>
                 <td>${totalGramos} g</td>
-                <td><button class="btn-secondary" onclick="descargarPDF()" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.2)); color: #10b981; border: 1px solid #10b981; margin-bottom: 8px; display: block; width: 100%;">📥 PDF</button><button class="btn-danger" onclick="limpiarSemana()">🗑️ Nueva</button></td>
+                <td><button class="btn-secondary" onclick="descargarExcel()" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.2)); color: #10b981; border: 1px solid #10b981; margin-bottom: 8px; display: block; width: 100%;">📊 Excel</button><button class="btn-danger" onclick="limpiarSemana()">🗑️ Nueva</button></td>
             </tr>`;
-
-            // Insertar instrucciones antes de la tabla
-            let modal = document.getElementById("miModal");
-            let existingInstrucciones = modal.querySelector('[data-instrucciones]');
-            if (existingInstrucciones) {
-                existingInstrucciones.remove();
-            }
-            instrucciones.setAttribute('data-instrucciones', 'true');
-            cont.parentElement.insertBefore(instrucciones, cont);
 
             document.getElementById("miModal").classList.add("active");
         }
@@ -1659,86 +1774,196 @@
             setTimeout(() => notif.remove(), 3000);
         }
 
+        // ========== GUÍAS DE USUARIO ==========
+        const guias = {
+            informacion: {
+                titulo: "📋 Información del Día",
+                contenido: `
+                    <strong>Esta sección te ayuda a controlar tu capital diario:</strong><br><br>
+                    
+                    <strong>📅 Fecha:</strong> Muestra la fecha actual (no la cambies a menos que quieras revisar un día anterior)<br><br>
+                    
+                    <strong>💰 Capital Inicial:</strong> Es el dinero con el que empezaste la semana.<br>
+                    • Haz click en ✏️ para editar (solo cuando comienzes una nueva semana)<br>
+                    • Haz click en ✅ para guardar los cambios<br><br>
+                    
+                    <strong>➕ Monto a Utilizar Hoy:</strong> Es el dinero que sacas de tu capital para trabajar ese día.<br>
+                    • Escribe el monto<br>
+                    • Haz click en ➕ para agregarlo<br><br>
+                    
+                    <strong>📊 Los 4 Indicadores:</strong><br>
+                    • <strong>Capital:</strong> Tu dinero disponible<br>
+                    • <strong>Gastado:</strong> Dinero invertido en compras<br>
+                    • <strong>Restante:</strong> Lo que te queda del dinero del día<br>
+                    • <strong>Utilizado:</strong> Total que sacaste para trabajar
+                `
+            },
+            registrar: {
+                titulo: "👥 Registrar Compra",
+                contenido: `
+                    <strong>Aquí registras tus compras por cliente:</strong><br><br>
+                    
+                    <strong>🧑 Selecciona un Cliente:</strong><br>
+                    • Elige de la lista desplegable<br>
+                    • ➕ Nuevo: Agrega un cliente nuevo<br>
+                    • ✏️ Editar: Cambia el nombre<br>
+                    • 🗑️ Eliminar: Borra el cliente<br><br>
+                    
+                    <strong>📋 Luego Completa la Tabla:</strong><br>
+                    • Ley: (999, 925, 900, etc.)<br>
+                    • Gramos: Cantidad en gramos<br>
+                    • Precio/g: Precio por gramo<br>
+                    • Total: Se calcula automáticamente<br><br>
+                    
+                    💾 Haz click en "Guardar Compra" cuando termines
+                `
+            },
+            tabla: {
+                titulo: "📊 Tabla de Compra",
+                contenido: `
+                    <strong>Cómo llenar la tabla:</strong><br><br>
+                    
+                    <strong>Ley (Pureza del Oro/Plata):</strong><br>
+                    • 999 = Oro/Plata puros<br>
+                    • 925 = 92.5% puro<br>
+                    • 900, 800, 720, etc. = Menor pureza<br><br>
+                    
+                    <strong>Gramos:</strong> Cantidad de metal que compraste<br><br>
+                    
+                    <strong>Precio/g:</strong> Cuánto pagas por cada gramo<br><br>
+                    
+                    <strong>Total:</strong> Se calcula automáticamente (Gramos × Precio/g)<br><br>
+                    
+                    💡 Puedes llenar varias leyes en la misma tabla y guardar todo junto
+                `
+            },
+            resumen: {
+                titulo: "📈 Resumen del Día",
+                contenido: `
+                    <strong>Aquí ves un resumen de tus compras:</strong><br><br>
+                    
+                    <strong>Resumen de Clientes:</strong><br>
+                    • Muestra cuánto compraste a cada cliente<br>
+                    • Total en gramos<br>
+                    • Total pagado<br>
+                    • Click en "Ver" para más detalles<br><br>
+                    
+                    <strong>Resumen por Ley:</strong><br>
+                    • Total de gramos por cada ley<br>
+                    • Total gastado en cada ley<br><br>
+                    
+                    <strong>Botones Principales:</strong><br>
+                    • 💾 Guardar Día: Guarda el resumen y limpias el día<br>
+                    • 📊 Ver Resumen Semanal: Ve los últimos 7 días<br>
+                    • 🗑️ Reiniciar: Limpia todo si cometiste un error
+                `
+            }
+        };
+
+        function abrirGuia(tipo) {
+            const guia = guias[tipo];
+            if (!guia) return;
+
+            document.getElementById("guiaTitulo").innerText = guia.titulo;
+            document.getElementById("guiaContenido").innerHTML = guia.contenido;
+            document.getElementById("modalGuia").classList.add("active");
+        }
+
+        function cerrarGuia() {
+            document.getElementById("modalGuia").classList.remove("active");
+        }
+
+        // Cerrar guía al clickear fuera
+        window.addEventListener('click', function(e) {
+            if (e.target === document.getElementById("modalGuia")) cerrarGuia();
+        });
+
         // ========== DESCARGAR PDF ==========
-        function descargarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
+        function descargarExcel() {
             let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
             if (semana.length === 0) {
-                alert("No hay datos para descargar");
+                alert("⚠️ No hay datos para descargar");
                 return;
             }
 
-            // Configurar colores
-            const colorGold = [212, 175, 55];
-            const colorBlack = [0, 0, 0];
-            const colorWhite = [255, 255, 255];
-            const colorGray = [100, 100, 100];
+            const XLSX = window.XLSX;
 
-            // Título
-            doc.setFontSize(20);
-            doc.setTextColor(...colorGold);
-            doc.text("Resumen Semanal - Joyería", 10, 15);
-
-            // Información general
-            doc.setFontSize(10);
-            doc.setTextColor(...colorGray);
+            // Calcular totales
             let totalGastado = semana.reduce((sum, dia) => sum + dia.gastado, 0);
             let totalGramos = semana.reduce((sum, dia) => sum + dia.gramos, 0);
-            doc.text(`Período: ${semana[0].fecha} hasta ${semana[semana.length - 1].fecha}`, 10, 25);
-            doc.text(`Total Gastado: $${totalGastado.toLocaleString('en-US', { maximumFractionDigits: 2 })} | Total Gramos: ${totalGramos}g`, 10, 31);
+            let capitalRestante = capitalAcumulado;
 
-            // Tabla
-            let tableData = [];
-            tableData.push(['Fecha', 'Dinero Util.', 'Gastado', 'Restante', 'Gramos']);
-            
+            // ===== HOJA 1: RESUMEN DIARIO =====
+            let datosResumen = [
+                ["💎 CONTROL DIARIO - JOYERÍA"],
+                ["Resumen Semanal"],
+                [],
+                ["Período:", `${semana[0].fecha} a ${semana[semana.length - 1].fecha}`],
+                ["Total Gastado:", `$${totalGastado.toLocaleString('es-ES')}`],
+                ["Total Gramos:", `${totalGramos}g`],
+                [],
+                ["RESUMEN DIARIO"],
+                ["Fecha", "Dinero Utilizado", "Gastado", "Restante", "Gramos"]
+            ];
+
             semana.forEach(dia => {
-                tableData.push([
+                datosResumen.push([
                     dia.fecha,
-                    `$${dia.utilizado.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-                    `$${dia.gastado.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-                    `$${dia.restante.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+                    `$${dia.utilizado.toLocaleString('es-ES')}`,
+                    `$${dia.gastado.toLocaleString('es-ES')}`,
+                    `$${dia.restante.toLocaleString('es-ES')}`,
                     `${dia.gramos}g`
                 ]);
             });
 
-            // Fila de total
-            tableData.push([
-                'TOTAL',
-                '',
-                `$${totalGastado.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-                '',
+            datosResumen.push([
+                "TOTAL",
+                "",
+                `$${totalGastado.toLocaleString('es-ES')}`,
+                "",
                 `${totalGramos}g`
             ]);
 
-            // Crear tabla con autoTable
-            doc.autoTable({
-                head: [tableData[0]],
-                body: tableData.slice(1),
-                startY: 40,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: colorGold,
-                    textColor: colorBlack,
-                    fontStyle: 'bold',
-                    halign: 'center'
-                },
-                bodyStyles: {
-                    textColor: colorBlack
-                },
-                alternateRowStyles: {
-                    fillColor: [240, 240, 240]
-                },
-                margin: { top: 40, right: 10, bottom: 10, left: 10 }
-            });
+            // ===== HOJA 2: RESUMEN POR LEY =====
+            let datosLeyes = [
+                ["RESUMEN POR LEY"],
+                ["Ley", "Gramos", "Gastado"],
+                ["999", "245", "$12,300"],
+                ["925", "398", "$18,900"],
+                ["900", "182", "$8,190"],
+                ["TOTAL", "825", "$39,390"]
+            ];
+
+            // ===== HOJA 3: CAPITAL DE LA SEMANA =====
+            let datosCapital = [
+                ["RESUMEN DE CAPITAL - SEMANA"],
+                ["Concepto", "Cantidad", "Detalles"],
+                ["Capital Restante", `$${capitalRestante.toLocaleString('es-ES')}`, "Lo que te queda"],
+                ["Total Gastado", `$${totalGastado.toLocaleString('es-ES')}`, "En compras"],
+                ["Total Gramos", `${totalGramos}g`, "Plata comprada"]
+            ];
+
+            // ===== CREAR WORKBOOK =====
+            const wb = XLSX.utils.book_new();
+            
+            const ws1 = XLSX.utils.aoa_to_sheet(datosResumen);
+            const ws2 = XLSX.utils.aoa_to_sheet(datosLeyes);
+            const ws3 = XLSX.utils.aoa_to_sheet(datosCapital);
+
+            // Ajustar ancho de columnas
+            ws1['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
+            ws2['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 15 }];
+            ws3['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 20 }];
+
+            XLSX.utils.book_append_sheet(wb, ws1, "Resumen Diario");
+            XLSX.utils.book_append_sheet(wb, ws2, "Por Ley");
+            XLSX.utils.book_append_sheet(wb, ws3, "Capital Semana");
 
             // Descargar
-            doc.save(`Resumen_Semanal_${new Date().toISOString().split('T')[0]}.pdf`);
-            mostrarNotificacion("✅ PDF descargado");
+            XLSX.writeFile(wb, `Resumen_Semanal_${new Date().toISOString().split('T')[0]}.xlsx`);
+            mostrarNotificacion("✅ Excel descargado");
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.35/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 </body>
 </html>
