@@ -1112,8 +1112,13 @@
             const pass = document.getElementById("loginPass").value;
             const error = document.getElementById("loginError");
 
-            // Validación simple - cambiar "admin" y "1234" por tus credenciales
+            // Validación simple
             if (user === "tony" && pass === "1977") {
+                // Si es el primer login, marcar para inicializar en 0
+                if (!localStorage.getItem("sesionActiva")) {
+                    localStorage.setItem("primerLogin", "true");
+                }
+                
                 localStorage.setItem("sesionActiva", "true");
                 document.getElementById("loginScreen").style.display = "none";
                 document.getElementById("mainApp").style.display = "block";
@@ -1127,10 +1132,10 @@
 
         function cerrarSesion() {
             if (confirm("¿Cerrar sesión?")) {
-                // Solo borrar la sesión activa, mantener TODOS los datos
+                // Solo borrar la sesión, MANTENER los datos en localStorage
                 localStorage.removeItem("sesionActiva");
                 
-                console.log("✅ Sesión cerrada - Datos mantenidos");
+                console.log("✅ Sesión cerrada - Datos guardados en localStorage");
                 location.reload();
             }
         }
@@ -1203,13 +1208,17 @@
             calcularTotalesRapido();
         }
 
-        // ========== LIMPIEZA DE PRIMERA VEZ (ANTES DE CARGAR DATOS) ==========
-        let esPrimeraVez = localStorage.getItem("primeraVez") !== "false";
-        if (esPrimeraVez) {
-            // LIMPIAR TODO si es primera vez
-            localStorage.clear();
-            localStorage.setItem("primeraVez", "true");  // Marcar que ya pasó la limpieza
-            console.log("✅ Primera vez - localStorage limpio");
+        // ========== LIMPIEZA DE PRIMER LOGIN ==========
+        let esPrimerLogin = localStorage.getItem("primerLogin") === "true";
+        if (esPrimerLogin) {
+            // LIMPIAR SOLO datos de trabajo, mantener clientes y resumen semanal
+            localStorage.removeItem("capitalGuardado");
+            localStorage.removeItem("utilizadoHoy");
+            localStorage.removeItem("dineroHoy");
+            localStorage.removeItem("compras");
+            localStorage.removeItem("fechaActual");
+            localStorage.removeItem("primerLogin");  // Borrar el flag
+            console.log("✅ Primer Login - Datos de trabajo en 0️⃣");
         }
 
         // ========== VARIABLES GLOBALES (después de limpiar) ==========
