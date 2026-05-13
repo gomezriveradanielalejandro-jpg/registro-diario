@@ -871,7 +871,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     
     <!-- ========== LIBRERÍA WORD (DOCX) ========== -->
-    <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
 </head>
 <body>
     <!-- ========== LOGIN SCREEN ========== -->
@@ -1953,16 +1953,31 @@
             if (e.target === document.getElementById("modalGuia")) cerrarGuia();
         });
 
-        // ========== DESCARGAR PDF ==========
+        // ========== DESCARGAR WORD ==========
         function descargarExcel() {
             console.log("✅ Botón Word clickeado");
+            console.log("window.docx:", typeof window.docx);
+            console.log("docx:", typeof docx);
             
             try {
-                // Verificar que docx esté disponible
-                if (typeof window.docx === 'undefined') {
-                    alert("⚠️ Cargando librería... recarga la página e intenta de nuevo");
+                // Intentar obtener docx de varias formas
+                let docxLib = null;
+                
+                if (typeof window.docx !== 'undefined') {
+                    docxLib = window.docx;
+                    console.log("✅ Usando window.docx");
+                } else if (typeof docx !== 'undefined') {
+                    docxLib = docx;
+                    console.log("✅ Usando docx global");
+                }
+                
+                if (!docxLib) {
+                    console.error("❌ docx NO disponible");
+                    alert("⚠️ La librería Word no se pudo cargar.\n\nIntenta:\n1. Verifica tu conexión a internet\n2. Recarga la página con Ctrl+F5\n3. Espera 10 segundos y reintenta");
                     return;
                 }
+
+                console.log("✅ docx disponible:", Object.keys(docxLib));
 
                 let semana = JSON.parse(localStorage.getItem("resumenSemanal")) || [];
                 
@@ -1971,7 +1986,7 @@
                     return;
                 }
 
-                const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, ShadingType } = window.docx;
+                const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, ShadingType } = docxLib;
 
                 // Calcular totales
                 let totalGastado = 0;
